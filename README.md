@@ -43,7 +43,7 @@ A transparent, metric-based rewards system for NEAR projects that directly ties 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/NEAR-Protocol-Rewards-Dashboard.git
+   git clone https://github.com/near-horizon/NEAR-Protocol-Rewards-Dashboard.git
    cd NEAR-Protocol-Rewards-Dashboard
    ```
 
@@ -81,11 +81,6 @@ A transparent, metric-based rewards system for NEAR projects that directly ties 
 - `npm run build` - Build for production
 - `npm run lint` - Run ESLint
 
-## 🤝 Community & Events
-
-- **Weekly Standups**: Every Wednesday at 11am UTC
-- **Telegram Chat**: [Join our community](https://t.me/+ELzfA2QeBrRjYzY5)
-- **Documentation**: [NEAR Docs](https://docs.near.org)
 
 ## 🔐 Environment Variables
 
@@ -97,7 +92,7 @@ VITE_GITHUB_TOKEN=           # Your GitHub personal access token
 
 ## 🏗️ Project Structure
 
-```
+```bash
 src/
 ├── components/         # React components
 ├── hooks/             # Custom React hooks
@@ -106,12 +101,6 @@ src/
 └── types/             # TypeScript type definitions
 ```
 
-## 📚 Resources
-
-- [NEAR Documentation](https://docs.near.org)
-- [Developer Portal](https://near.org/developers)
-- [NEAR Website](https://near.org)
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
@@ -119,15 +108,3 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- NEAR Protocol team
-- All contributors and participants
-- Open source community
-
-## 📞 Support
-
-- Join our [Telegram Chat](https://t.me/+ELzfA2QeBrRjYzY5)
-- Report issues on [GitHub](https://github.com/your-username/NEAR-Protocol-Rewards-Dashboard/issues)
-- Follow updates on [Twitter](https://twitter.com/nearhorizon) 
