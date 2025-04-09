@@ -1,31 +1,64 @@
+'use client';
+
 import React from 'react';
-import { ExternalLink, GitCommit, GitPullRequest, MessageSquare, CircleDot, Github, TrendingUp, Award, Clock, Users, Zap, BarChart2, Activity } from 'lucide-react';
-import type { Repository } from '../types';
+import { ExternalLink, GitCommit, GitPullRequest, MessageSquare, CircleDot, TrendingUp, Award, Clock, Users, Zap, BarChart2 } from 'lucide-react';
+
+interface Repository {
+  name: string;
+  totalScore: number;
+  weeklyReward: number;
+  monthlyReward?: number;
+  rewardLevel: string;
+  periodStart: string;
+  periodEnd: string;
+  commitScore?: number;
+  prScore?: number;
+  reviewScore?: number;
+  issueScore?: number;
+  url?: string;
+  monthlyProjection?: number;
+}
 
 interface RepoCardProps {
   repo: Repository;
 }
 
+type LevelColor = {
+  [key: string]: string;
+};
+
+type LevelIcon = {
+  [key: string]: string;
+};
+
 export function RepoCard({ repo }: RepoCardProps) {
-  const levelColors = {
+  const levelColors: LevelColor = {
     Diamond: 'bg-blue-100 text-blue-800 border-blue-200',
     Gold: 'bg-yellow-100 text-yellow-800 border-yellow-200',
     Silver: 'bg-gray-100 text-gray-800 border-gray-200',
     Bronze: 'bg-orange-100 text-orange-800 border-orange-200',
-    Member: 'bg-purple-100 text-purple-800 border-purple-200'
+    Member: 'bg-purple-100 text-purple-800 border-purple-200',
+    High: 'bg-green-100 text-green-800 border-green-200',
+    Medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    Low: 'bg-red-100 text-red-800 border-red-200'
   };
 
-  const levelIcons = {
+  const levelIcons: LevelIcon = {
     Diamond: '💎',
     Gold: '🏆',
     Silver: '🥈',
     Bronze: '🥉',
-    Member: '👤'
+    Member: '👤',
+    High: '🔥',
+    Medium: '⚡',
+    Low: '🔋'
   };
 
-  // Calculate activity percentages
-  const totalActivity = repo.commitScore + repo.prScore + repo.reviewScore + repo.issueScore;
-  const getPercentage = (value: number) => ((value / totalActivity) * 100).toFixed(1);
+  // Calculate activity scores
+  const commitScore = repo.commitScore || (repo.totalScore * 0.25);
+  const prScore = repo.prScore || (repo.totalScore * 0.20);
+  const reviewScore = repo.reviewScore || (repo.totalScore * 0.40);
+  const issueScore = repo.issueScore || (repo.totalScore * 0.15);
 
   // Format dates
   const formatDate = (dateString: string) => {
@@ -37,8 +70,13 @@ export function RepoCard({ repo }: RepoCardProps) {
   };
 
   // Calculate monthly projection vs actual
-  const projectionDiff = repo.monthlyProjection - repo.monthlyReward;
+  const monthlyReward = repo.monthlyReward || (repo.weeklyReward * 4);
+  const monthlyProjection = repo.monthlyProjection || monthlyReward;
+  const projectionDiff = monthlyProjection - monthlyReward;
   const projectionTrend = projectionDiff >= 0 ? 'up' : 'down';
+
+  // Construir URL do GitHub se não fornecido
+  const repoUrl = repo.url || `https://github.com/${repo.name}`;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200">
@@ -48,10 +86,10 @@ export function RepoCard({ repo }: RepoCardProps) {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <h3 className="text-xl font-bold text-gray-900">
-                {repo.name.split('/')[1]}
+                {repo.name.split('/')[1] || repo.name}
               </h3>
               <a 
-                href={repo.url} 
+                href={repoUrl} 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -62,8 +100,8 @@ export function RepoCard({ repo }: RepoCardProps) {
             <p className="text-sm text-gray-500">{repo.name.split('/')[0]}</p>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${levelColors[repo.rewardLevel]}`}>
-              <span>{levelIcons[repo.rewardLevel]}</span>
+            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${levelColors[repo.rewardLevel] || 'bg-gray-100 text-gray-800 border-gray-200'}`}>
+              <span>{levelIcons[repo.rewardLevel] || '🔍'}</span>
               {repo.rewardLevel}
             </span>
           </div>
@@ -79,10 +117,10 @@ export function RepoCard({ repo }: RepoCardProps) {
             <p className="text-2xl font-bold text-green-700">${repo.weeklyReward.toLocaleString()}</p>
             <div className="mt-2 text-sm flex items-center gap-1">
               <span className="text-gray-600">Monthly:</span>
-              <span className="font-medium text-gray-900">${repo.monthlyReward.toLocaleString()}</span>
+              <span className="font-medium text-gray-900">${monthlyReward.toLocaleString()}</span>
               {projectionDiff !== 0 && (
                 <span className={`flex items-center gap-1 ${projectionTrend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                  <TrendingUp size={14} className={projectionTrend === 'down' && 'rotate-180'} />
+                  <TrendingUp size={14} className={`${projectionTrend === 'down' ? 'rotate-180' : ''}`} />
                   {Math.abs(projectionDiff).toLocaleString()}
                 </span>
               )}
@@ -112,7 +150,7 @@ export function RepoCard({ repo }: RepoCardProps) {
                   Commits
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{repo.commitScore.toFixed(0)}</span>
+                  <span className="font-medium text-gray-900">{commitScore.toFixed(0)}</span>
                 </div>
               </div>
               <div className="flex items-center justify-between text-sm">
@@ -121,7 +159,7 @@ export function RepoCard({ repo }: RepoCardProps) {
                   Pull Requests
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{repo.prScore.toFixed(0)}</span>
+                  <span className="font-medium text-gray-900">{prScore.toFixed(0)}</span>
                 </div>
               </div>
             </div>
@@ -132,7 +170,7 @@ export function RepoCard({ repo }: RepoCardProps) {
                   Reviews
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{repo.reviewScore.toFixed(0)}</span>
+                  <span className="font-medium text-gray-900">{reviewScore.toFixed(0)}</span>
                 </div>
               </div>
               <div className="flex items-center justify-between text-sm">
@@ -141,7 +179,7 @@ export function RepoCard({ repo }: RepoCardProps) {
                   Issues
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{repo.issueScore.toFixed(0)}</span>
+                  <span className="font-medium text-gray-900">{issueScore.toFixed(0)}</span>
                 </div>
               </div>
             </div>
@@ -160,7 +198,7 @@ export function RepoCard({ repo }: RepoCardProps) {
           </div>
           <div className="flex gap-2">
             <a 
-              href={`${repo.url}/pulls`} 
+              href={`${repoUrl}/pulls`} 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-gray-400 hover:text-gray-600 transition-colors p-1"
@@ -169,7 +207,7 @@ export function RepoCard({ repo }: RepoCardProps) {
               <GitPullRequest size={16} />
             </a>
             <a 
-              href={`${repo.url}/issues`} 
+              href={`${repoUrl}/issues`} 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-gray-400 hover:text-gray-600 transition-colors p-1"
@@ -178,7 +216,7 @@ export function RepoCard({ repo }: RepoCardProps) {
               <MessageSquare size={16} />
             </a>
             <a 
-              href={`${repo.url}/graphs/contributors`} 
+              href={`${repoUrl}/graphs/contributors`} 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-gray-400 hover:text-gray-600 transition-colors p-1"
@@ -191,4 +229,4 @@ export function RepoCard({ repo }: RepoCardProps) {
       </div>
     </div>
   );
-}
+} 

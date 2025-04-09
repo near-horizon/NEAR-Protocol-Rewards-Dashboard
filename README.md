@@ -1,110 +1,36 @@
-# NEAR Protocol Rewards Dashboard
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-A transparent, metric-based rewards system for NEAR projects that directly ties incentives to development activity and user adoption. This dashboard provides real-time insights into repository metrics and rewards distribution across the NEAR ecosystem.
+## Getting Started
 
-## 🚀 Features
-
-- **Real-time Metrics Tracking**
-  - Repository activity monitoring
-  - Developer contribution analytics
-  - Reward level calculations
-  - Historical data visualization
-
-- **Interactive Dashboard**
-  - Activity heatmaps
-  - Repository performance stats
-  - Sortable repository list
-  - Search and filtering capabilities
-
-- **Modern UI/UX**
-  - Responsive design
-  - Dark/light mode support
-  - Interactive data visualizations
-  - Real-time updates
-
-## 🛠️ Tech Stack
-
-- **Frontend**: React 18 with TypeScript
-- **Styling**: TailwindCSS
-- **Data Visualization**: Recharts, React Heat Map
-- **API Integration**: GitHub API (Octokit)
-- **Database**: Supabase
-- **Build Tool**: Vite
-- **Icons**: Lucide React
-
-## 📦 Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn
-- GitHub account
-- Supabase account
-
-## 🔧 Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/near-horizon/NEAR-Protocol-Rewards-Dashboard.git
-   cd NEAR-Protocol-Rewards-Dashboard
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Create a `.env` file in the root directory with the following variables:
-   ```env
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   VITE_GITHUB_TOKEN=your_github_personal_access_token
-   ```
-
-4. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-## 🚀 Quick Start for Projects
-
-1. Initialize your repository:
-   ```bash
-   npx near-protocol-rewards init
-   ```
-
-2. Push to main branch to start tracking contributions
-
-3. Join the community and share your progress
-
-## 📊 Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run lint` - Run ESLint
-
-
-## 🔐 Environment Variables
-
-```env
-VITE_SUPABASE_URL=           # Your Supabase project URL
-VITE_SUPABASE_ANON_KEY=      # Your Supabase anonymous key
-VITE_GITHUB_TOKEN=           # Your GitHub personal access token
-```
-
-## 🏗️ Project Structure
+First, run the development server:
 
 ```bash
-src/
-├── components/         # React components
-├── hooks/             # Custom React hooks
-├── lib/               # Utility functions and API clients
-├── pages/             # Page components
-└── types/             # TypeScript type definitions
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## 🤝 Contributing
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## 📄 License
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
