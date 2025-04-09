@@ -286,7 +286,7 @@ export default function Home() {
         
         try {
           // Use local API route defined in Next.js rewrites
-          const response = await fetch('/api/dashboard', {
+          const response = await fetch('/dashboard/api/dashboard', {
             signal: controller.signal,
             headers: {
               'Accept': 'application/json',
