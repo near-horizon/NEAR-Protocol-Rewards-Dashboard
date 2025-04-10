@@ -285,8 +285,8 @@ export default function Home() {
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
         
         try {
-          // Use local API route defined in Next.js rewrites
-          const response = await fetch('/api/dashboard', {
+          // Use local proxy route
+          const response = await fetch('/dashboard/api/dashboard', {
             signal: controller.signal,
             headers: {
               'Accept': 'application/json',
