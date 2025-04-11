@@ -285,12 +285,13 @@ export default function Home() {
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
         
         try {
-          const response = await fetch('/dashboard/api/dashboard/', {
+          const response = await fetch('https://near-protocol-rewards-tracking.com/dashboard', {
+            method: 'GET',
             signal: controller.signal,
             headers: {
-              'Accept': 'application/json',
               'Content-Type': 'application/json'
-            }
+            },
+            cache: 'no-store'
           });
           
           clearTimeout(timeoutId);
