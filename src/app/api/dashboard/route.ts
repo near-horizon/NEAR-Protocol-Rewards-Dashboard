@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+// Usar variável de ambiente ou fallback para o URL da API
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://near-protocol-rewards-tracking.com/dashboard';
+
 const mockApiData = {
   projects: [
     {
@@ -145,7 +148,10 @@ const mockApiData = {
 export async function GET() {
   try {
     try {
-      const response = await fetch('https://near-protocol-rewards-tracking.com/dashboard', {
+      // URL correto da API externa
+      console.log('Chamando API externa:', API_URL);
+      
+      const response = await fetch(API_URL, {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
