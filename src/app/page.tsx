@@ -285,9 +285,7 @@ export default function Home() {
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
         
         try {
-          // If will run locally, use this:
-          // const response = await fetch('/api/dashboard', {
-          const response = await fetch('/api/dashboard', {
+          const response = await fetch('/dashboard/api/dashboard/', {
             signal: controller.signal,
             headers: {
               'Accept': 'application/json',
