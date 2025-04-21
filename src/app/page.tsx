@@ -23,34 +23,6 @@ interface Level {
   color: string;
 }
 
-interface Reward {
-  score: {
-    total: number;
-    breakdown: {
-      commits: number;
-      pullRequests: number;
-      reviews: number;
-      issues: number;
-    }
-  };
-  breakdown: {
-    commits: number;
-    pullRequests: number;
-    reviews: number;
-    issues: number;
-  };
-  level: Level;
-  monetary_reward: number;
-  achievements: Achievement[];
-  metadata: {
-    timestamp: number;
-    periodStart: number;
-    periodEnd: number;
-    source: string;
-    projectId: string;
-  };
-}
-
 interface RawOnchainData {
   metadata: {
     period: {
