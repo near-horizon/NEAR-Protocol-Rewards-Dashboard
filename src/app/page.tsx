@@ -301,8 +301,6 @@ export default function Home() {
         const transformedRepo = {
           name: project.repositorie,
           totalScore: project.rewards_total.score.total,
-          weeklyReward: project.rewards_total.total_reward,
-          monthlyReward: project.rewards_total.total_reward,
           rewardLevel: project.rewards_total.level.name,
           periodStart: project.rawdata_onchain.metadata.period.start_date,
           periodEnd: project.rawdata_onchain.metadata.period.end_date,
@@ -315,6 +313,8 @@ export default function Home() {
           contractInteractions: project.metrics_onchain.contract_interactions,
           uniqueWallets: project.metrics_onchain.unique_wallets,
           rewards_total: project.rewards_total,
+          rewards_onchain: project.rewards_onchain,
+          rewards_offchain: project.rewards_offchain,
           metrics_onchain: project.metrics_onchain,
           metrics_offchain: project.metrics_offchain
         };

@@ -6,8 +6,6 @@ import { ExternalLink, GitCommit, GitPullRequest, MessageSquare, CircleDot, Tren
 interface Repository {
   name: string;
   totalScore: number;
-  weeklyReward: number;
-  monthlyReward?: number;
   rewardLevel: string;
   periodStart: string;
   periodEnd: string;
@@ -16,7 +14,31 @@ interface Repository {
   reviewScore?: number;
   issueScore?: number;
   url?: string;
-  monthlyProjection?: number;
+  rewards_total: {
+    total_reward: number;
+  };
+  rewards_onchain: {
+    total_reward: number;
+  };
+  rewards_offchain: {
+    total_reward: number;
+  };
+  metrics_offchain: {
+    commits: {
+      count: number;
+    };
+    pull_requests: {
+      open: number;
+      merged: number;
+    };
+    reviews: {
+      count: number;
+    };
+    issues: {
+      open: number;
+      closed: number;
+    };
+  };
 }
 
 interface RepoCardProps {
@@ -69,12 +91,6 @@ export function RepoCard({ repo }: RepoCardProps) {
     });
   };
 
-  // Calculate monthly projection vs actual
-  const monthlyReward = repo.monthlyReward || (repo.weeklyReward * 4);
-  const monthlyProjection = repo.monthlyProjection || monthlyReward;
-  const projectionDiff = monthlyProjection - monthlyReward;
-  const projectionTrend = projectionDiff >= 0 ? 'up' : 'down';
-
   // Construir URL do GitHub se não fornecido
   const repoUrl = repo.url || `https://github.com/${repo.name}`;
 
@@ -112,18 +128,18 @@ export function RepoCard({ repo }: RepoCardProps) {
           <div className="bg-gradient-to-br from-green-50 to-green-50/30 rounded-lg p-4 border border-green-100 shadow-sm hover:shadow-md transition-all">
             <div className="flex items-center gap-2 text-sm text-green-600 font-medium mb-1">
               <Award size={16} />
-              Weekly Reward
+              Total Reward
             </div>
-            <p className="text-2xl font-bold text-green-700">${repo.weeklyReward.toLocaleString()}</p>
-            <div className="mt-2 text-sm flex items-center gap-1">
-              <span className="text-gray-600">Monthly:</span>
-              <span className="font-medium text-gray-900">${monthlyReward.toLocaleString()}</span>
-              {projectionDiff !== 0 && (
-                <span className={`flex items-center gap-1 ${projectionTrend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                  <TrendingUp size={14} className={`${projectionTrend === 'down' ? 'rotate-180' : ''}`} />
-                  {Math.abs(projectionDiff).toLocaleString()}
-                </span>
-              )}
+            <p className="text-2xl font-bold text-green-700">${repo.rewards_total?.total_reward.toLocaleString()}</p>
+            <div className="mt-2 text-sm flex flex-col gap-1">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 whitespace-nowrap pr-2">Onchain Reward:</span>
+                <span className="font-medium text-gray-900 text-right">${repo.rewards_onchain?.total_reward?.toLocaleString() || '0'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 whitespace-nowrap pr-2">Offchain Reward:</span>
+                <span className="font-medium text-gray-900 text-right">${repo.rewards_offchain?.total_reward?.toLocaleString() || '0'}</span>
+              </div>
             </div>
           </div>
           <div className="bg-gradient-to-br from-blue-50 to-blue-50/30 rounded-lg p-4 border border-blue-100 shadow-sm hover:shadow-md transition-all">
