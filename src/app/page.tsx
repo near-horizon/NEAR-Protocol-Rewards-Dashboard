@@ -8,21 +8,6 @@ import { Loader2 } from 'lucide-react';
 import { AlertCircle } from 'lucide-react';
 
 // Tipos para os dados da API
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  earnedAt: string;
-  category: string;
-}
-
-interface Level {
-  name: string;
-  minScore: number;
-  maxScore: number;
-  color: string;
-}
-
 interface RawOnchainData {
   metadata: {
     period: {
