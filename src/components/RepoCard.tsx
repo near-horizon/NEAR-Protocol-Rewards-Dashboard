@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ExternalLink, GitCommit, GitPullRequest, MessageSquare, CircleDot, TrendingUp, Award, Clock, Users, Zap, BarChart2 } from 'lucide-react';
+import { ExternalLink, GitCommit, GitPullRequest, MessageSquare, CircleDot, TrendingUp, Award, Clock, Users, Zap, BarChart2, Link, Coins, FileCode } from 'lucide-react';
 
 interface Repository {
   name: string;
@@ -39,6 +39,9 @@ interface Repository {
       closed: number;
     };
   };
+  transactionVolume: number;
+  contractInteractions: number;
+  uniqueWallets: number;
 }
 
 interface RepoCardProps {
@@ -153,13 +156,13 @@ export function RepoCard({ repo }: RepoCardProps) {
         </div>
 
         {/* Activity Metrics */}
-        <div className="space-y-4">
+        <div className="space-y-2">
           <h4 className="font-semibold text-gray-900 flex items-center gap-2">
             <Zap size={16} className="text-purple-500" />
             Activity Metrics
           </h4>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2 text-gray-600">
                   <GitCommit size={16} />
@@ -179,7 +182,7 @@ export function RepoCard({ repo }: RepoCardProps) {
                 </div>
               </div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2 text-gray-600">
                   <MessageSquare size={16} />
@@ -196,6 +199,47 @@ export function RepoCard({ repo }: RepoCardProps) {
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-gray-900">{issueScore.toFixed(0)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Onchain Metrics */}
+        <div className="mt-4">
+          <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-2">
+            <Link size={16} className="text-blue-500" />
+            Onchain Metrics
+          </h4>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2 text-gray-600">
+                  <Coins size={16} />
+                  Transaction Volume
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-900">{repo.transactionVolume.toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2 text-gray-600">
+                  <FileCode size={16} />
+                  Contract Interactions
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-900">{repo.contractInteractions.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2 text-gray-600">
+                  <Users size={16} />
+                  Unique Wallets
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-900">{repo.uniqueWallets.toLocaleString()}</span>
                 </div>
               </div>
             </div>
