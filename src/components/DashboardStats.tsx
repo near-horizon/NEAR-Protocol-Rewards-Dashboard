@@ -17,6 +17,9 @@ interface Repository {
   reviewScore?: number;
   issueScore?: number;
   activityCount?: number;
+  transactionVolume?: number;
+  contractInteractions?: number;
+  uniqueWallets?: number;
 }
 
 interface DashboardData {
@@ -56,6 +59,9 @@ export function DashboardStats({ repositories, dashboardData }: DashboardStatsPr
   const totalActivities = repositories.reduce((sum, repo) => sum + (repo.activityCount || 0), 0) || 
     dashboardData?.total_commits || 0;
 
+  // Valor mockado fixo em NEAR
+  const totalTransactionVolume = 1250.75;
+
   // Preparar dados para o gráfico de contribuição
   const contributionBreakdownData = useMemo(() => {
     // Ordenar repositórios por pontuação total (decrescente) e pegar os top 8
@@ -73,12 +79,20 @@ export function DashboardStats({ repositories, dashboardData }: DashboardStatsPr
         const reviews = repo.reviewScore !== undefined ? repo.reviewScore : repo.totalScore * 0.40;
         const issues = repo.issueScore !== undefined ? repo.issueScore : repo.totalScore * 0.15;
         
+        // Dados mockados para as novas métricas
+        const transactionVolume = repo.transactionVolume || Math.floor(Math.random() * 4) + 2;
+        const contractInteractions = repo.contractInteractions || Math.floor(Math.random() * 4) + 2;
+        const uniqueWallets = repo.uniqueWallets || Math.floor(Math.random() * 4) + 2;
+        
         return {
           name: displayName,
           commits: commits,
           prs: prs,
           reviews: reviews,
           issues: issues,
+          transactionVolume: transactionVolume,
+          contractInteractions: contractInteractions,
+          uniqueWallets: uniqueWallets,
           level: repo.rewardLevel,
           totalScore: repo.totalScore
         };
@@ -132,29 +146,32 @@ export function DashboardStats({ repositories, dashboardData }: DashboardStatsPr
 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-600">Average Score</p>
+            <p className="text-sm font-medium text-gray-600">Total Volume Transaction</p>
             <div className="group relative">
               <Info size={16} className="text-gray-400" />
               <div className="absolute right-0 mt-2 w-64 p-3 bg-gray-800 text-white text-sm rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                <p className="font-medium mb-1">Performance Score</p>
-                <p className="text-gray-300">Average score calculated from commit quality, PR impact, review contributions, and issue management</p>
+                <p className="font-medium mb-1">Transaction Volume</p>
+                <p className="text-gray-300">Total volume transacted between all wallets within projects on the NEAR network</p>
               </div>
             </div>
           </div>
-          <p className="text-3xl font-bold text-purple-500 mt-2">{averageScore.toFixed(1)}</p>
+          <div className="flex items-baseline gap-2">
+            <p className="text-3xl font-bold text-purple-500 mt-2">{totalTransactionVolume.toLocaleString()}</p>
+            <p className="text-lg font-medium text-gray-500">NEAR</p>
+          </div>
           <div className="mt-2 text-sm text-gray-500">
-            Per repository
+            Across all wallets
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-600">Active Repositories</p>
+            <p className="text-sm font-medium text-gray-600">Active Projects</p>
             <div className="group relative">
               <Info size={16} className="text-gray-400" />
               <div className="absolute right-0 mt-2 w-64 p-3 bg-gray-800 text-white text-sm rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
                 <p className="font-medium mb-1">Repository Count</p>
-                <p className="text-gray-300">Number of repositories actively participating in the rewards program</p>
+                <p className="text-gray-300">Number of projects actively participating in the rewards program</p>
               </div>
             </div>
           </div>
@@ -216,11 +233,16 @@ export function DashboardStats({ repositories, dashboardData }: DashboardStatsPr
                     return [`${value.toFixed(1)} points`, name];
                   }}
                   labelFormatter={(label) => label}
+                  contentStyle={{ backgroundColor: 'white', border: '1px solid #E5E7EB' }}
+                  labelStyle={{ color: '#111827', fontWeight: 500 }}
                 />
                 <Bar dataKey="commits" stackId="a" fill="#3B82F6" name="Commits" />
                 <Bar dataKey="prs" stackId="a" fill="#10B981" name="Pull Requests" />
                 <Bar dataKey="reviews" stackId="a" fill="#8B5CF6" name="Reviews" />
                 <Bar dataKey="issues" stackId="a" fill="#F97316" name="Issues" />
+                <Bar dataKey="transactionVolume" stackId="a" fill="#EC4899" name="Transaction Volume" />
+                <Bar dataKey="contractInteractions" stackId="a" fill="#F59E0B" name="Contract Interactions" />
+                <Bar dataKey="uniqueWallets" stackId="a" fill="#6366F1" name="Unique Wallets" />
               </BarChart>
             </ResponsiveContainer>
           </div>

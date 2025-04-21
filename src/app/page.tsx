@@ -97,6 +97,9 @@ const mockRepositories = [
     rewardLevel: 'High',
     periodStart: '2024-03-01T00:00:00Z',
     periodEnd: '2024-03-31T23:59:59Z',
+    transactionVolume: 5,
+    contractInteractions: 4,
+    uniqueWallets: 6
   },
   {
     name: 'near/near-api-js',
@@ -105,6 +108,9 @@ const mockRepositories = [
     rewardLevel: 'Medium',
     periodStart: '2024-03-01T00:00:00Z',
     periodEnd: '2024-03-31T23:59:59Z',
+    transactionVolume: 4,
+    contractInteractions: 3,
+    uniqueWallets: 5
   },
   {
     name: 'near/near-wallet',
@@ -113,6 +119,9 @@ const mockRepositories = [
     rewardLevel: 'Medium',
     periodStart: '2024-03-01T00:00:00Z',
     periodEnd: '2024-03-31T23:59:59Z',
+    transactionVolume: 3,
+    contractInteractions: 4,
+    uniqueWallets: 4
   },
   {
     name: 'near/near-cli',
@@ -121,6 +130,9 @@ const mockRepositories = [
     rewardLevel: 'Low',
     periodStart: '2024-03-01T00:00:00Z',
     periodEnd: '2024-03-31T23:59:59Z',
+    transactionVolume: 2,
+    contractInteractions: 3,
+    uniqueWallets: 3
   },
 ];
 
