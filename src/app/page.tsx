@@ -88,197 +88,6 @@ interface ApiResponse {
   };
 }
 
-// Mock data como fallback
-const mockRepositories = [
-  {
-    name: 'near/core-contracts',
-    totalScore: 850,
-    weeklyReward: 250,
-    rewardLevel: 'High',
-    periodStart: '2024-03-01T00:00:00Z',
-    periodEnd: '2024-03-31T23:59:59Z',
-    transactionVolume: 5,
-    contractInteractions: 4,
-    uniqueWallets: 6
-  },
-  {
-    name: 'near/near-api-js',
-    totalScore: 720,
-    weeklyReward: 180,
-    rewardLevel: 'Medium',
-    periodStart: '2024-03-01T00:00:00Z',
-    periodEnd: '2024-03-31T23:59:59Z',
-    transactionVolume: 4,
-    contractInteractions: 3,
-    uniqueWallets: 5
-  },
-  {
-    name: 'near/near-wallet',
-    totalScore: 650,
-    weeklyReward: 150,
-    rewardLevel: 'Medium',
-    periodStart: '2024-03-01T00:00:00Z',
-    periodEnd: '2024-03-31T23:59:59Z',
-    transactionVolume: 3,
-    contractInteractions: 4,
-    uniqueWallets: 4
-  },
-  {
-    name: 'near/near-cli',
-    totalScore: 450,
-    weeklyReward: 100,
-    rewardLevel: 'Low',
-    periodStart: '2024-03-01T00:00:00Z',
-    periodEnd: '2024-03-31T23:59:59Z',
-    transactionVolume: 2,
-    contractInteractions: 3,
-    uniqueWallets: 3
-  },
-];
-
-// Dados mockados no formato da API para uso quando a API não estiver disponível
-const mockApiData: ApiResponse = {
-  projects: [
-    {
-      repository: 'finowl-near/finowl-app',
-      period: '2025-04',
-      timestamp: '2025-04-06T01:45:36.952505',
-      metrics: {
-        commits: {
-          count: 3,
-          authors: [
-            { login: 'finowl-near', count: 1 },
-            { login: 'unknown', count: 1 },
-            { login: 'KD-ayoub', count: 1 }
-          ],
-        },
-        pull_requests: {
-          open: 0,
-          merged: 1,
-          closed: 0,
-          authors: ['B-Naoufal'],
-        },
-        reviews: {
-          count: 61,
-          authors: ['B-Naoufal', 'KD-ayoub', 'finowl-near'],
-        },
-        issues: {
-          open: 0,
-          closed: 1,
-          participants: ['B-Naoufal'],
-        },
-      },
-      reward: {
-        score: {
-          total: 22.96666666666667,
-          breakdown: {
-            commits: 1.0499999999999998,
-            pullRequests: 1.25,
-            reviews: 20.0,
-            issues: 0.6666666666666667,
-          },
-        },
-        breakdown: {
-          commits: 1.0499999999999998,
-          pullRequests: 1.25,
-          reviews: 20.0,
-          issues: 0.6666666666666667,
-        },
-        level: {
-          name: 'Member',
-          minScore: 0,
-          maxScore: 49,
-          color: '#A4A4A4',
-        },
-        monetary_reward: 500,
-        achievements: [
-          {
-            id: 'review-expert',
-            name: 'Review Expert',
-            description: 'Completed 30 or more code reviews',
-            earnedAt: '2025-04-06T01:45:36.952551',
-            category: 'review',
-          },
-        ],
-        metadata: {
-          timestamp: 1743903936952,
-          periodStart: 1743465600000,
-          periodEnd: 1743903936952,
-          source: 'github',
-          projectId: 'finowl-near/finowl-app',
-        },
-      },
-    },
-    {
-      repository: 'wootzapp/wootz-browser',
-      period: '2025-04',
-      timestamp: '2025-04-06T01:46:10.995628',
-      metrics: {
-        commits: {
-          count: 4,
-          authors: [
-            { login: 'pandey019', count: 1 },
-            { login: '1311-hack1', count: 1 },
-            { login: 'kritagya-khanna', count: 2 }
-          ],
-        },
-        pull_requests: {
-          open: 1,
-          merged: 0,
-          closed: 0,
-          authors: ['kritagya-khanna'],
-        },
-        reviews: {
-          count: 12,
-          authors: ['balrampandeydmifin', 'pandey019'],
-        },
-        issues: {
-          open: 0,
-          closed: 0,
-          participants: [],
-        },
-      },
-      reward: {
-        score: {
-          total: 9.400000000000002,
-          breakdown: {
-            commits: 1.4,
-            pullRequests: 0.0,
-            reviews: 8.000000000000002,
-            issues: 0.0,
-          },
-        },
-        breakdown: {
-          commits: 1.4,
-          pullRequests: 0.0,
-          reviews: 8.000000000000002,
-          issues: 0.0,
-        },
-        level: {
-          name: 'Member',
-          minScore: 0,
-          maxScore: 49,
-          color: '#A4A4A4',
-        },
-        monetary_reward: 500,
-        achievements: [],
-        metadata: {
-          timestamp: 1743903970995,
-          periodStart: 1743465600000,
-          periodEnd: 1743903970995,
-          source: 'github',
-          projectId: 'wootzapp/wootz-browser',
-        },
-      },
-    },
-  ],
-  dashboard: {
-    total_commits: 11,
-    total_projects: 6,
-    total_monetary_rewards: 3000,
-  },
-};
-
 export default function Home() {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'score' | 'reward'>('score');
@@ -309,7 +118,7 @@ export default function Home() {
           clearTimeout(timeoutId);
           
           if (!response.ok) {
-            throw new Error(`Request error: ${response.status}`);
+            throw new Error(`Error fetching data: ${response.status}`);
           }
           
           const data = await response.json();
@@ -318,15 +127,13 @@ export default function Home() {
           setError(null);
         } catch (fetchError) {
           console.error('Error fetching API data:', fetchError);
-          
-          // Use mock data as fallback
-          console.log('Using mock data as fallback due to network error');
-          setApiData(mockApiData);
-          setError(new Error('Could not connect to API. Using sample data.'));
+          setError(new Error('Unable to load Dashboard data. Please try again later.'));
+          setApiData(null);
         }
       } catch (err) {
         console.error('Unexpected error:', err);
         setError(err instanceof Error ? err : new Error('Unknown error'));
+        setApiData(null);
       } finally {
         setLoading(false);
       }
@@ -335,11 +142,10 @@ export default function Home() {
     fetchData();
   }, []);
   
-  // Transformar dados da API para o formato que nossa aplicação usa
+  // Transform API data to our application format
   const repositories = useMemo(() => {
     if (!apiData) {
-      console.log('Usando dados mockados como fallback');
-      return mockRepositories;
+      return [];
     }
     
     try {
@@ -349,7 +155,6 @@ export default function Home() {
         const reviewScore = project.reward.breakdown.reviews;
         const issueScore = project.reward.breakdown.issues;
         
-        // Estimar contagem de atividades baseado nos scores (valores aproximados)
         const activityCount = Math.round(
           (project.metrics.commits.count || 0) + 
           ((project.metrics.pull_requests.merged || 0) + (project.metrics.pull_requests.open || 0)) + 
@@ -361,7 +166,7 @@ export default function Home() {
           name: project.repository,
           totalScore: project.reward.score.total,
           weeklyReward: project.reward.monetary_reward,
-          monthlyReward: project.reward.monetary_reward * 4, // Estimativa mensal
+          monthlyReward: project.reward.monetary_reward * 4,
           rewardLevel: project.reward.level.name,
           periodStart: new Date(project.reward.metadata.periodStart).toISOString(),
           periodEnd: new Date(project.reward.metadata.periodEnd).toISOString(),
@@ -373,8 +178,8 @@ export default function Home() {
         };
       });
     } catch (err) {
-      console.error('Erro ao processar dados da API:', err);
-      return mockRepositories;
+      console.error('Error processing API data:', err);
+      return [];
     }
   }, [apiData]);
 
@@ -414,6 +219,19 @@ export default function Home() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-sm border border-red-200">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error loading data</h2>
+          <p className="text-gray-600 mb-4">{error.message}</p>
+          <p className="text-sm text-gray-500">Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header
@@ -426,16 +244,6 @@ export default function Home() {
       />
 
       <main className="flex-grow max-w-[2000px] mx-auto px-6 py-12 w-full">
-        {error && (
-          <div className="mb-8 bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800 flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <div>
-              <p className="font-medium">Warning: {error.message}</p>
-              <p className="text-sm">Displaying sample data. Please try again later.</p>
-            </div>
-          </div>
-        )}
-        
         {view === 'dashboard' ? (
           <DashboardStats 
             repositories={uniqueRepositories} 

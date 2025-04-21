@@ -59,8 +59,8 @@ export function DashboardStats({ repositories, dashboardData }: DashboardStatsPr
   const totalActivities = repositories.reduce((sum, repo) => sum + (repo.activityCount || 0), 0) || 
     dashboardData?.total_commits || 0;
 
-  // Valor mockado fixo em NEAR
-  const totalTransactionVolume = 1250.75;
+  // Calcular o volume total de transações baseado nos dados dos repositórios
+  const totalTransactionVolume = repositories.reduce((sum, repo) => sum + (repo.transactionVolume || 0), 0);
 
   // Preparar dados para o gráfico de contribuição
   const contributionBreakdownData = useMemo(() => {
@@ -79,20 +79,15 @@ export function DashboardStats({ repositories, dashboardData }: DashboardStatsPr
         const reviews = repo.reviewScore !== undefined ? repo.reviewScore : repo.totalScore * 0.40;
         const issues = repo.issueScore !== undefined ? repo.issueScore : repo.totalScore * 0.15;
         
-        // Dados mockados para as novas métricas
-        const transactionVolume = repo.transactionVolume || Math.floor(Math.random() * 4) + 2;
-        const contractInteractions = repo.contractInteractions || Math.floor(Math.random() * 4) + 2;
-        const uniqueWallets = repo.uniqueWallets || Math.floor(Math.random() * 4) + 2;
-        
         return {
           name: displayName,
           commits: commits,
           prs: prs,
           reviews: reviews,
           issues: issues,
-          transactionVolume: transactionVolume,
-          contractInteractions: contractInteractions,
-          uniqueWallets: uniqueWallets,
+          transactionVolume: repo.transactionVolume || 0,
+          contractInteractions: repo.contractInteractions || 0,
+          uniqueWallets: repo.uniqueWallets || 0,
           level: repo.rewardLevel,
           totalScore: repo.totalScore
         };
