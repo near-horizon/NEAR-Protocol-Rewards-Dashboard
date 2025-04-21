@@ -79,8 +79,142 @@ interface ApiRepository {
   reward: Reward;
 }
 
+interface ProjectData {
+  project: string;
+  wallet: string;
+  github: string;
+  repositorie: string;
+  period: string;
+  timestamp: string;
+  metrics_onchain: OnchainMetrics;
+  rewards_onchain: OnchainRewards;
+  rawdata_onchain: RawOnchainData;
+  metrics_offchain: OffchainMetrics;
+  rewards_offchain: OffchainRewards;
+  rawdata_offchain: RawOffchainData;
+  rewards_total: TotalRewards;
+}
+
+interface OnchainMetrics {
+  transaction_volume: number;
+  contract_interactions: number;
+  unique_wallets: number;
+}
+
+interface OnchainRewards {
+  score: ScoreWithNormalization;
+  level: RewardLevel;
+  total_reward: number;
+}
+
+interface RawOnchainData {
+  metadata: {
+    period: {
+      start_date: string;
+      end_date: string;
+    };
+    account_id: string;
+    timestamp: string;
+  };
+  transactions: any[];
+}
+
+interface OffchainMetrics {
+  commits: {
+    count: number;
+    authors: AuthorCount[];
+  };
+  pull_requests: {
+    open: number;
+    merged: number;
+    closed: number;
+    authors: string[];
+  };
+  reviews: {
+    count: number;
+    authors: string[];
+  };
+  issues: {
+    open: number;
+    closed: number;
+    participants: string[];
+  };
+}
+
+interface OffchainRewards {
+  score: Score;
+  level: RewardLevel;
+  total_reward: number;
+}
+
+interface RawOffchainData {
+  commits: {
+    count: number;
+    authors: AuthorCount[];
+  };
+  pull_requests: {
+    open: number;
+    merged: number;
+    closed: number;
+    authors: string[];
+  };
+  reviews: {
+    count: number;
+    authors: string[];
+  };
+  issues: {
+    open: number;
+    closed: number;
+    participants: string[];
+  };
+}
+
+interface TotalRewards {
+  score: {
+    total: number;
+    breakdown: {
+      onchain: number;
+      offchain: number;
+    };
+  };
+  level: RewardLevel;
+  total_reward: number;
+}
+
+interface Score {
+  total: number;
+  breakdown: {
+    commits: number;
+    pullRequests: number;
+    reviews: number;
+    issues: number;
+  };
+}
+
+interface ScoreWithNormalization {
+  total: number;
+  normalized: number;
+  breakdown: {
+    transactionVolume: number;
+    contractInteractions: number;
+    uniqueWallets: number;
+  };
+}
+
+interface RewardLevel {
+  name: string;
+  minScore: number;
+  maxScore: number;
+  color: string;
+}
+
+interface AuthorCount {
+  login: string;
+  count: number;
+}
+
 interface ApiResponse {
-  projects: ApiRepository[];
+  projects: ProjectData[];
   dashboard: {
     total_commits: number;
     total_projects: number;
@@ -106,7 +240,7 @@ export default function Home() {
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
         
         try {
-          const response = await fetch('https://near-protocol-rewards-tracking.com/dashboard', {
+          const response = await fetch('https://near-protocol-rewards-tracking.com/dashboard-test', {
             method: 'GET',
             signal: controller.signal,
             headers: {
@@ -150,31 +284,34 @@ export default function Home() {
     
     try {
       return apiData.projects.map(project => {
-        const commitScore = project.reward.breakdown.commits;
-        const prScore = project.reward.breakdown.pullRequests;
-        const reviewScore = project.reward.breakdown.reviews;
-        const issueScore = project.reward.breakdown.issues;
+        const commitScore = project.rewards_offchain.score.breakdown.commits;
+        const prScore = project.rewards_offchain.score.breakdown.pullRequests;
+        const reviewScore = project.rewards_offchain.score.breakdown.reviews;
+        const issueScore = project.rewards_offchain.score.breakdown.issues;
         
         const activityCount = Math.round(
-          (project.metrics.commits.count || 0) + 
-          ((project.metrics.pull_requests.merged || 0) + (project.metrics.pull_requests.open || 0)) + 
-          (project.metrics.reviews.count || 0) + 
-          ((project.metrics.issues.open || 0) + (project.metrics.issues.closed || 0))
+          (project.metrics_offchain.commits.count || 0) + 
+          ((project.metrics_offchain.pull_requests.merged || 0) + (project.metrics_offchain.pull_requests.open || 0)) + 
+          (project.metrics_offchain.reviews.count || 0) + 
+          ((project.metrics_offchain.issues.open || 0) + (project.metrics_offchain.issues.closed || 0))
         );
         
         return {
-          name: project.repository,
-          totalScore: project.reward.score.total,
-          weeklyReward: project.reward.monetary_reward,
-          monthlyReward: project.reward.monetary_reward * 4,
-          rewardLevel: project.reward.level.name,
-          periodStart: new Date(project.reward.metadata.periodStart).toISOString(),
-          periodEnd: new Date(project.reward.metadata.periodEnd).toISOString(),
+          name: project.repositorie,
+          totalScore: project.rewards_total.score.total,
+          weeklyReward: project.rewards_total.total_reward,
+          monthlyReward: project.rewards_total.total_reward,
+          rewardLevel: project.rewards_total.level.name,
+          periodStart: project.rawdata_onchain.metadata.period.start_date,
+          periodEnd: project.rawdata_onchain.metadata.period.end_date,
           commitScore: commitScore,
           prScore: prScore,
           reviewScore: reviewScore,
           issueScore: issueScore,
-          activityCount: activityCount
+          activityCount: activityCount,
+          transactionVolume: project.metrics_onchain.transaction_volume,
+          contractInteractions: project.metrics_onchain.contract_interactions,
+          uniqueWallets: project.metrics_onchain.unique_wallets
         };
       });
     } catch (err) {
