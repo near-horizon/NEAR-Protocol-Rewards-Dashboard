@@ -8,18 +8,41 @@ interface Repository {
   name: string;
   totalScore: number;
   weeklyReward: number;
-  monthlyReward?: number;
+  monthlyReward: number;
   rewardLevel: string;
   periodStart: string;
   periodEnd: string;
-  commitScore?: number;
-  prScore?: number;
-  reviewScore?: number;
-  issueScore?: number;
-  activityCount?: number;
-  transactionVolume?: number;
-  contractInteractions?: number;
-  uniqueWallets?: number;
+  commitScore: number;
+  prScore: number;
+  reviewScore: number;
+  issueScore: number;
+  activityCount: number;
+  transactionVolume: number;
+  contractInteractions: number;
+  uniqueWallets: number;
+  rewards_total: {
+    total_reward: number;
+  };
+  metrics_onchain: {
+    transaction_volume: number;
+  };
+  metrics_offchain: {
+    commits: {
+      count: number;
+    };
+    pull_requests: {
+      open: number;
+      merged: number;
+      closed: number;
+    };
+    reviews: {
+      count: number;
+    };
+    issues: {
+      open: number;
+      closed: number;
+    };
+  };
 }
 
 interface DashboardData {
@@ -45,22 +68,27 @@ const COLORS = {
 };
 
 export function DashboardStats({ repositories, dashboardData }: DashboardStatsProps) {
-  // Usar dados da API se disponíveis, ou calcular a partir dos repositórios
-  const totalRewards = dashboardData?.total_monetary_rewards || 
-    repositories.reduce((acc, repo) => acc + repo.weeklyReward, 0);
+  // Calcular total de recompensas
+  const totalRewards = repositories.reduce((acc, repo) => acc + (repo.rewards_total?.total_reward || 0), 0);
     
-  const averageScore = repositories.length > 0 ? 
-    repositories.reduce((acc, repo) => acc + repo.totalScore, 0) / repositories.length : 
-    0;
+  // Calcular volume total de transações
+  const totalTransactionVolume = repositories.reduce((acc, repo) => acc + (repo.metrics_onchain?.transaction_volume || 0), 0);
     
-  const activeRepos = dashboardData?.total_projects || repositories.length;
+  // Número de projetos ativos
+  const activeRepos = repositories.length;
   
-  // Calcular total de atividades de todos os repositórios
-  const totalActivities = repositories.reduce((sum, repo) => sum + (repo.activityCount || 0), 0) || 
-    dashboardData?.total_commits || 0;
-
-  // Calcular o volume total de transações baseado nos dados dos repositórios
-  const totalTransactionVolume = repositories.reduce((sum, repo) => sum + (repo.transactionVolume || 0), 0);
+  // Calcular total de atividades
+  const totalActivities = repositories.reduce((sum, repo) => {
+    const commits = repo.metrics_offchain?.commits?.count || 0;
+    const pullRequests = (repo.metrics_offchain?.pull_requests?.open || 0) + 
+                        (repo.metrics_offchain?.pull_requests?.merged || 0) + 
+                        (repo.metrics_offchain?.pull_requests?.closed || 0);
+    const reviews = repo.metrics_offchain?.reviews?.count || 0;
+    const issues = (repo.metrics_offchain?.issues?.open || 0) + 
+                  (repo.metrics_offchain?.issues?.closed || 0);
+    
+    return sum + commits + pullRequests + reviews + issues;
+  }, 0);
 
   // Preparar dados para o gráfico de contribuição
   const contributionBreakdownData = useMemo(() => {

@@ -235,9 +235,8 @@ export default function Home() {
       try {
         setLoading(true);
         
-        // Add timeout to avoid infinite wait
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
         
         try {
           const response = await fetch('https://near-protocol-rewards-tracking.com/dashboard-test', {
@@ -256,7 +255,7 @@ export default function Home() {
           }
           
           const data = await response.json();
-          console.log('Data received successfully:', data);
+          console.log('API Response:', data);
           setApiData(data);
           setError(null);
         } catch (fetchError) {
@@ -278,12 +277,15 @@ export default function Home() {
   
   // Transform API data to our application format
   const repositories = useMemo(() => {
-    if (!apiData) {
+    console.log('apiData:', apiData);
+    if (!apiData || !Array.isArray(apiData)) {
+      console.log('No projects data available');
       return [];
     }
     
     try {
-      return apiData.projects.map(project => {
+      const transformedRepos = apiData.map(project => {
+        console.log('Processing project:', project);
         const commitScore = project.rewards_offchain.score.breakdown.commits;
         const prScore = project.rewards_offchain.score.breakdown.pullRequests;
         const reviewScore = project.rewards_offchain.score.breakdown.reviews;
@@ -296,7 +298,7 @@ export default function Home() {
           ((project.metrics_offchain.issues.open || 0) + (project.metrics_offchain.issues.closed || 0))
         );
         
-        return {
+        const transformedRepo = {
           name: project.repositorie,
           totalScore: project.rewards_total.score.total,
           weeklyReward: project.rewards_total.total_reward,
@@ -311,9 +313,18 @@ export default function Home() {
           activityCount: activityCount,
           transactionVolume: project.metrics_onchain.transaction_volume,
           contractInteractions: project.metrics_onchain.contract_interactions,
-          uniqueWallets: project.metrics_onchain.unique_wallets
+          uniqueWallets: project.metrics_onchain.unique_wallets,
+          rewards_total: project.rewards_total,
+          metrics_onchain: project.metrics_onchain,
+          metrics_offchain: project.metrics_offchain
         };
+        
+        console.log('Transformed repo:', transformedRepo);
+        return transformedRepo;
       });
+      
+      console.log('All transformed repos:', transformedRepos);
+      return transformedRepos;
     } catch (err) {
       console.error('Error processing API data:', err);
       return [];
