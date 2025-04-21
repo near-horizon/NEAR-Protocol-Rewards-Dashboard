@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ExternalLink, GitCommit, GitPullRequest, MessageSquare, CircleDot, TrendingUp, Award, Clock, Users, Zap, BarChart2, Link, Coins, FileCode } from 'lucide-react';
+import { ExternalLink, GitCommit, GitPullRequest, MessageSquare, CircleDot, Award, Clock, Users, Zap, BarChart2, Link, Coins, FileCode } from 'lucide-react';
 
 interface Repository {
   name: string;

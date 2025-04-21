@@ -6,6 +6,7 @@ import { DashboardStats } from '@/components/DashboardStats';
 import { RepoCard } from '@/components/RepoCard';
 import { Loader2 } from 'lucide-react';
 import { AlertCircle } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 // Tipos para os dados da API
 interface Achievement {
@@ -51,32 +52,21 @@ interface Reward {
   };
 }
 
-interface ApiRepository {
-  repository: string;
-  period: string;
-  timestamp: string;
-  metrics: {
-    commits: {
-      count: number;
-      authors: { login: string; count: number }[];
+interface RawOnchainData {
+  metadata: {
+    period: {
+      start_date: string;
+      end_date: string;
     };
-    pull_requests: {
-      open: number;
-      merged: number;
-      closed: number;
-      authors: string[];
-    };
-    reviews: {
-      count: number;
-      authors: string[];
-    };
-    issues: {
-      open: number;
-      closed: number;
-      participants: string[];
-    };
+    account_id: string;
+    timestamp: string;
   };
-  reward: Reward;
+  transactions: Array<{
+    hash: string;
+    timestamp: string;
+    type: string;
+    amount: number;
+  }>;
 }
 
 interface ProjectData {
@@ -105,18 +95,6 @@ interface OnchainRewards {
   score: ScoreWithNormalization;
   level: RewardLevel;
   total_reward: number;
-}
-
-interface RawOnchainData {
-  metadata: {
-    period: {
-      start_date: string;
-      end_date: string;
-    };
-    account_id: string;
-    timestamp: string;
-  };
-  transactions: any[];
 }
 
 interface OffchainMetrics {
@@ -395,7 +373,6 @@ export default function Home() {
         {view === 'dashboard' ? (
           <DashboardStats 
             repositories={uniqueRepositories} 
-            dashboardData={apiData?.dashboard}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mt-8">

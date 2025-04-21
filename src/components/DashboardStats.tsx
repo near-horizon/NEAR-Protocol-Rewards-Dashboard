@@ -53,7 +53,6 @@ interface DashboardData {
 
 interface DashboardStatsProps {
   repositories: Repository[];
-  dashboardData?: DashboardData;
 }
 
 const COLORS = {
@@ -67,7 +66,7 @@ const COLORS = {
   High: '#EC4899'     // Rosa
 };
 
-export function DashboardStats({ repositories, dashboardData }: DashboardStatsProps) {
+export function DashboardStats({ repositories }: DashboardStatsProps) {
   // Calcular total de recompensas
   const totalRewards = repositories.reduce((acc, repo) => acc + (repo.rewards_total?.total_reward || 0), 0);
     
