@@ -6,7 +6,6 @@ import { DashboardStats } from '@/components/DashboardStats';
 import { RepoCard } from '@/components/RepoCard';
 import { Loader2 } from 'lucide-react';
 import { AlertCircle } from 'lucide-react';
-import { ExternalLink } from 'lucide-react';
 
 // Tipos para os dados da API
 interface Achievement {
@@ -202,7 +201,6 @@ interface ApiResponse {
 
 export default function Home() {
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState<'score' | 'reward'>('score');
   const [view, setView] = useState<'dashboard' | 'list'>('dashboard');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -326,13 +324,8 @@ export default function Home() {
         repo.name.toLowerCase().includes(search.toLowerCase()) ||
         repo.rewardLevel.toLowerCase().includes(search.toLowerCase())
       )
-      .sort((a, b) => {
-        if (sortBy === 'score') {
-          return b.totalScore - a.totalScore;
-        }
-        return b.weeklyReward - a.weeklyReward;
-      });
-  }, [uniqueRepositories, search, sortBy]);
+      .sort((a, b) => b.totalScore - a.totalScore);
+  }, [uniqueRepositories, search]);
 
   if (loading) {
     return (
@@ -363,8 +356,6 @@ export default function Home() {
       <Header
         search={search}
         setSearch={setSearch}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
         view={view}
         setView={setView}
       />

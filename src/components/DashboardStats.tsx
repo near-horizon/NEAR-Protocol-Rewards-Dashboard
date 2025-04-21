@@ -7,24 +7,30 @@ import { Info } from 'lucide-react';
 interface Repository {
   name: string;
   totalScore: number;
-  weeklyReward: number;
-  monthlyReward: number;
   rewardLevel: string;
   periodStart: string;
   periodEnd: string;
-  commitScore: number;
-  prScore: number;
-  reviewScore: number;
-  issueScore: number;
-  activityCount: number;
+  commitScore?: number;
+  prScore?: number;
+  reviewScore?: number;
+  issueScore?: number;
+  url?: string;
   transactionVolume: number;
   contractInteractions: number;
   uniqueWallets: number;
   rewards_total: {
     total_reward: number;
   };
+  rewards_onchain: {
+    total_reward: number;
+  };
+  rewards_offchain: {
+    total_reward: number;
+  };
   metrics_onchain: {
     transaction_volume: number;
+    contract_interactions: number;
+    unique_wallets: number;
   };
   metrics_offchain: {
     commits: {
@@ -43,12 +49,6 @@ interface Repository {
       closed: number;
     };
   };
-}
-
-interface DashboardData {
-  total_commits: number;
-  total_projects: number;
-  total_monetary_rewards: number;
 }
 
 interface DashboardStatsProps {
