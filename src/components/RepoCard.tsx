@@ -1,13 +1,12 @@
 'use client';
 
 import React from 'react';
-import { ExternalLink, GitCommit, GitPullRequest, MessageSquare, CircleDot, TrendingUp, Award, Clock, Users, Zap, BarChart2 } from 'lucide-react';
+import { ExternalLink, GitCommit, GitPullRequest, MessageSquare, CircleDot, Award, Clock, Users, Zap, BarChart2, Link, Coins, FileCode } from 'lucide-react';
 
 interface Repository {
   name: string;
+  wallet: string;
   totalScore: number;
-  weeklyReward: number;
-  monthlyReward?: number;
   rewardLevel: string;
   periodStart: string;
   periodEnd: string;
@@ -16,7 +15,34 @@ interface Repository {
   reviewScore?: number;
   issueScore?: number;
   url?: string;
-  monthlyProjection?: number;
+  rewards_total: {
+    total_reward: number;
+  };
+  rewards_onchain: {
+    total_reward: number;
+  };
+  rewards_offchain: {
+    total_reward: number;
+  };
+  metrics_offchain: {
+    commits: {
+      count: number;
+    };
+    pull_requests: {
+      open: number;
+      merged: number;
+    };
+    reviews: {
+      count: number;
+    };
+    issues: {
+      open: number;
+      closed: number;
+    };
+  };
+  transactionVolume: number;
+  contractInteractions: number;
+  uniqueWallets: number;
 }
 
 interface RepoCardProps {
@@ -69,14 +95,14 @@ export function RepoCard({ repo }: RepoCardProps) {
     });
   };
 
-  // Calculate monthly projection vs actual
-  const monthlyReward = repo.monthlyReward || (repo.weeklyReward * 4);
-  const monthlyProjection = repo.monthlyProjection || monthlyReward;
-  const projectionDiff = monthlyProjection - monthlyReward;
-  const projectionTrend = projectionDiff >= 0 ? 'up' : 'down';
-
   // Construir URL do GitHub se não fornecido
   const repoUrl = repo.url || `https://github.com/${repo.name}`;
+
+  // Função para truncar a wallet
+  const truncateWallet = (wallet: string) => {
+    if (!wallet || wallet.length <= 20) return wallet;
+    return `${wallet.slice(0, 12)}...${wallet.slice(-8)}`;
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200">
@@ -97,7 +123,10 @@ export function RepoCard({ repo }: RepoCardProps) {
                 <ExternalLink size={16} />
               </a>
             </div>
-            <p className="text-sm text-gray-500">{repo.name.split('/')[0]}</p>
+            <p className="text-sm text-gray-500">
+              {repo.name.split('/')[0]}
+              {repo.wallet && repo.wallet.trim() !== '' && ` - ${truncateWallet(repo.wallet)}`}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${levelColors[repo.rewardLevel] || 'bg-gray-100 text-gray-800 border-gray-200'}`}>
@@ -112,19 +141,10 @@ export function RepoCard({ repo }: RepoCardProps) {
           <div className="bg-gradient-to-br from-green-50 to-green-50/30 rounded-lg p-4 border border-green-100 shadow-sm hover:shadow-md transition-all">
             <div className="flex items-center gap-2 text-sm text-green-600 font-medium mb-1">
               <Award size={16} />
-              Weekly Reward
+              Total Reward
             </div>
-            <p className="text-2xl font-bold text-green-700">${repo.weeklyReward.toLocaleString()}</p>
-            <div className="mt-2 text-sm flex items-center gap-1">
-              <span className="text-gray-600">Monthly:</span>
-              <span className="font-medium text-gray-900">${monthlyReward.toLocaleString()}</span>
-              {projectionDiff !== 0 && (
-                <span className={`flex items-center gap-1 ${projectionTrend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                  <TrendingUp size={14} className={`${projectionTrend === 'down' ? 'rotate-180' : ''}`} />
-                  {Math.abs(projectionDiff).toLocaleString()}
-                </span>
-              )}
-            </div>
+            <p className="text-2xl font-bold text-green-700">${repo.rewards_total?.total_reward.toLocaleString()}</p>
+            <div className="mt-2 text-sm text-gray-600">Reward calculated from project metrics</div>
           </div>
           <div className="bg-gradient-to-br from-blue-50 to-blue-50/30 rounded-lg p-4 border border-blue-100 shadow-sm hover:shadow-md transition-all">
             <div className="flex items-center gap-2 text-sm text-blue-600 font-medium mb-1">
@@ -137,13 +157,13 @@ export function RepoCard({ repo }: RepoCardProps) {
         </div>
 
         {/* Activity Metrics */}
-        <div className="space-y-4">
+        <div className="space-y-2">
           <h4 className="font-semibold text-gray-900 flex items-center gap-2">
             <Zap size={16} className="text-purple-500" />
             Activity Metrics
           </h4>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2 text-gray-600">
                   <GitCommit size={16} />
@@ -163,7 +183,7 @@ export function RepoCard({ repo }: RepoCardProps) {
                 </div>
               </div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2 text-gray-600">
                   <MessageSquare size={16} />
@@ -181,6 +201,43 @@ export function RepoCard({ repo }: RepoCardProps) {
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-gray-900">{issueScore.toFixed(0)}</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Onchain Metrics */}
+        <div className="mt-4">
+          <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-2">
+            <Link size={16} className="text-blue-500" />
+            Onchain Metrics
+          </h4>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 text-gray-600">
+                <Coins size={16} />
+                Transaction Volume
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-gray-900">{Math.round(repo.transactionVolume).toLocaleString()}</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 text-gray-600">
+                <Users size={16} />
+                Unique Wallets
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-gray-900">{repo.uniqueWallets.toLocaleString()}</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 text-gray-600">
+                <FileCode size={16} />
+                Contract Interactions
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-gray-900">{repo.contractInteractions.toLocaleString()}</span>
               </div>
             </div>
           </div>

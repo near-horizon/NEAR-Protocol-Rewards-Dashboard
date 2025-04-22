@@ -8,79 +8,147 @@ import { Loader2 } from 'lucide-react';
 import { AlertCircle } from 'lucide-react';
 
 // Tipos para os dados da API
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  earnedAt: string;
-  category: string;
+interface RawOnchainData {
+  metadata: {
+    period: {
+      start_date: string;
+      end_date: string;
+    };
+    account_id: string;
+    timestamp: string;
+  };
+  transactions: Array<{
+    hash: string;
+    timestamp: string;
+    type: string;
+    amount: number;
+  }>;
 }
 
-interface Level {
-  name: string;
-  minScore: number;
-  maxScore: number;
-  color: string;
+interface ProjectData {
+  project: string;
+  wallet: string;
+  github: string;
+  repositorie: string;
+  period: string;
+  timestamp: string;
+  metrics_onchain: OnchainMetrics;
+  rewards_onchain: OnchainRewards;
+  rawdata_onchain: RawOnchainData;
+  metrics_offchain: OffchainMetrics;
+  rewards_offchain: OffchainRewards;
+  rawdata_offchain: RawOffchainData;
+  rewards_total: TotalRewards;
 }
 
-interface Reward {
+interface OnchainMetrics {
+  transaction_volume: number;
+  contract_interactions: number;
+  unique_wallets: number;
+}
+
+interface OnchainRewards {
+  score: ScoreWithNormalization;
+  level: RewardLevel;
+  total_reward: number;
+}
+
+interface OffchainMetrics {
+  commits: {
+    count: number;
+    authors: AuthorCount[];
+  };
+  pull_requests: {
+    open: number;
+    merged: number;
+    closed: number;
+    authors: string[];
+  };
+  reviews: {
+    count: number;
+    authors: string[];
+  };
+  issues: {
+    open: number;
+    closed: number;
+    participants: string[];
+  };
+}
+
+interface OffchainRewards {
+  score: Score;
+  level: RewardLevel;
+  total_reward: number;
+}
+
+interface RawOffchainData {
+  commits: {
+    count: number;
+    authors: AuthorCount[];
+  };
+  pull_requests: {
+    open: number;
+    merged: number;
+    closed: number;
+    authors: string[];
+  };
+  reviews: {
+    count: number;
+    authors: string[];
+  };
+  issues: {
+    open: number;
+    closed: number;
+    participants: string[];
+  };
+}
+
+interface TotalRewards {
   score: {
     total: number;
     breakdown: {
-      commits: number;
-      pullRequests: number;
-      reviews: number;
-      issues: number;
-    }
+      onchain: number;
+      offchain: number;
+    };
   };
+  level: RewardLevel;
+  total_reward: number;
+}
+
+interface Score {
+  total: number;
   breakdown: {
     commits: number;
     pullRequests: number;
     reviews: number;
     issues: number;
   };
-  level: Level;
-  monetary_reward: number;
-  achievements: Achievement[];
-  metadata: {
-    timestamp: number;
-    periodStart: number;
-    periodEnd: number;
-    source: string;
-    projectId: string;
+}
+
+interface ScoreWithNormalization {
+  total: number;
+  normalized: number;
+  breakdown: {
+    transactionVolume: number;
+    contractInteractions: number;
+    uniqueWallets: number;
   };
 }
 
-interface ApiRepository {
-  repository: string;
-  period: string;
-  timestamp: string;
-  metrics: {
-    commits: {
-      count: number;
-      authors: { login: string; count: number }[];
-    };
-    pull_requests: {
-      open: number;
-      merged: number;
-      closed: number;
-      authors: string[];
-    };
-    reviews: {
-      count: number;
-      authors: string[];
-    };
-    issues: {
-      open: number;
-      closed: number;
-      participants: string[];
-    };
-  };
-  reward: Reward;
+interface RewardLevel {
+  name: string;
+  minScore: number;
+  maxScore: number;
+  color: string;
+}
+
+interface AuthorCount {
+  login: string;
+  count: number;
 }
 
 interface ApiResponse {
-  projects: ApiRepository[];
+  projects: ProjectData[];
   dashboard: {
     total_commits: number;
     total_projects: number;
@@ -88,188 +156,8 @@ interface ApiResponse {
   };
 }
 
-// Mock data como fallback
-const mockRepositories = [
-  {
-    name: 'near/core-contracts',
-    totalScore: 850,
-    weeklyReward: 250,
-    rewardLevel: 'High',
-    periodStart: '2024-03-01T00:00:00Z',
-    periodEnd: '2024-03-31T23:59:59Z',
-  },
-  {
-    name: 'near/near-api-js',
-    totalScore: 720,
-    weeklyReward: 180,
-    rewardLevel: 'Medium',
-    periodStart: '2024-03-01T00:00:00Z',
-    periodEnd: '2024-03-31T23:59:59Z',
-  },
-  {
-    name: 'near/near-wallet',
-    totalScore: 650,
-    weeklyReward: 150,
-    rewardLevel: 'Medium',
-    periodStart: '2024-03-01T00:00:00Z',
-    periodEnd: '2024-03-31T23:59:59Z',
-  },
-  {
-    name: 'near/near-cli',
-    totalScore: 450,
-    weeklyReward: 100,
-    rewardLevel: 'Low',
-    periodStart: '2024-03-01T00:00:00Z',
-    periodEnd: '2024-03-31T23:59:59Z',
-  },
-];
-
-// Dados mockados no formato da API para uso quando a API não estiver disponível
-const mockApiData: ApiResponse = {
-  projects: [
-    {
-      repository: 'finowl-near/finowl-app',
-      period: '2025-04',
-      timestamp: '2025-04-06T01:45:36.952505',
-      metrics: {
-        commits: {
-          count: 3,
-          authors: [
-            { login: 'finowl-near', count: 1 },
-            { login: 'unknown', count: 1 },
-            { login: 'KD-ayoub', count: 1 }
-          ],
-        },
-        pull_requests: {
-          open: 0,
-          merged: 1,
-          closed: 0,
-          authors: ['B-Naoufal'],
-        },
-        reviews: {
-          count: 61,
-          authors: ['B-Naoufal', 'KD-ayoub', 'finowl-near'],
-        },
-        issues: {
-          open: 0,
-          closed: 1,
-          participants: ['B-Naoufal'],
-        },
-      },
-      reward: {
-        score: {
-          total: 22.96666666666667,
-          breakdown: {
-            commits: 1.0499999999999998,
-            pullRequests: 1.25,
-            reviews: 20.0,
-            issues: 0.6666666666666667,
-          },
-        },
-        breakdown: {
-          commits: 1.0499999999999998,
-          pullRequests: 1.25,
-          reviews: 20.0,
-          issues: 0.6666666666666667,
-        },
-        level: {
-          name: 'Member',
-          minScore: 0,
-          maxScore: 49,
-          color: '#A4A4A4',
-        },
-        monetary_reward: 500,
-        achievements: [
-          {
-            id: 'review-expert',
-            name: 'Review Expert',
-            description: 'Completed 30 or more code reviews',
-            earnedAt: '2025-04-06T01:45:36.952551',
-            category: 'review',
-          },
-        ],
-        metadata: {
-          timestamp: 1743903936952,
-          periodStart: 1743465600000,
-          periodEnd: 1743903936952,
-          source: 'github',
-          projectId: 'finowl-near/finowl-app',
-        },
-      },
-    },
-    {
-      repository: 'wootzapp/wootz-browser',
-      period: '2025-04',
-      timestamp: '2025-04-06T01:46:10.995628',
-      metrics: {
-        commits: {
-          count: 4,
-          authors: [
-            { login: 'pandey019', count: 1 },
-            { login: '1311-hack1', count: 1 },
-            { login: 'kritagya-khanna', count: 2 }
-          ],
-        },
-        pull_requests: {
-          open: 1,
-          merged: 0,
-          closed: 0,
-          authors: ['kritagya-khanna'],
-        },
-        reviews: {
-          count: 12,
-          authors: ['balrampandeydmifin', 'pandey019'],
-        },
-        issues: {
-          open: 0,
-          closed: 0,
-          participants: [],
-        },
-      },
-      reward: {
-        score: {
-          total: 9.400000000000002,
-          breakdown: {
-            commits: 1.4,
-            pullRequests: 0.0,
-            reviews: 8.000000000000002,
-            issues: 0.0,
-          },
-        },
-        breakdown: {
-          commits: 1.4,
-          pullRequests: 0.0,
-          reviews: 8.000000000000002,
-          issues: 0.0,
-        },
-        level: {
-          name: 'Member',
-          minScore: 0,
-          maxScore: 49,
-          color: '#A4A4A4',
-        },
-        monetary_reward: 500,
-        achievements: [],
-        metadata: {
-          timestamp: 1743903970995,
-          periodStart: 1743465600000,
-          periodEnd: 1743903970995,
-          source: 'github',
-          projectId: 'wootzapp/wootz-browser',
-        },
-      },
-    },
-  ],
-  dashboard: {
-    total_commits: 11,
-    total_projects: 6,
-    total_monetary_rewards: 3000,
-  },
-};
-
 export default function Home() {
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState<'score' | 'reward'>('score');
   const [view, setView] = useState<'dashboard' | 'list'>('dashboard');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -280,9 +168,8 @@ export default function Home() {
       try {
         setLoading(true);
         
-        // Add timeout to avoid infinite wait
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
         
         try {
           const response = await fetch('https://near-protocol-rewards-tracking.com/dashboard', {
@@ -297,24 +184,22 @@ export default function Home() {
           clearTimeout(timeoutId);
           
           if (!response.ok) {
-            throw new Error(`Request error: ${response.status}`);
+            throw new Error(`Error fetching data: ${response.status}`);
           }
           
           const data = await response.json();
-          console.log('Data received successfully:', data);
+          console.log('API Response:', data);
           setApiData(data);
           setError(null);
         } catch (fetchError) {
           console.error('Error fetching API data:', fetchError);
-          
-          // Use mock data as fallback
-          console.log('Using mock data as fallback due to network error');
-          setApiData(mockApiData);
-          setError(new Error('Could not connect to API. Using sample data.'));
+          setError(new Error('Unable to load Dashboard data. Please try again later.'));
+          setApiData(null);
         }
       } catch (err) {
         console.error('Unexpected error:', err);
         setError(err instanceof Error ? err : new Error('Unknown error'));
+        setApiData(null);
       } finally {
         setLoading(false);
       }
@@ -323,46 +208,60 @@ export default function Home() {
     fetchData();
   }, []);
   
-  // Transformar dados da API para o formato que nossa aplicação usa
+  // Transform API data to our application format
   const repositories = useMemo(() => {
-    if (!apiData) {
-      console.log('Usando dados mockados como fallback');
-      return mockRepositories;
+    console.log('apiData:', apiData);
+    if (!apiData || !Array.isArray(apiData)) {
+      console.log('No projects data available');
+      return [];
     }
     
     try {
-      return apiData.projects.map(project => {
-        const commitScore = project.reward.breakdown.commits;
-        const prScore = project.reward.breakdown.pullRequests;
-        const reviewScore = project.reward.breakdown.reviews;
-        const issueScore = project.reward.breakdown.issues;
+      const transformedRepos = apiData.map(project => {
+        console.log('Processing project:', project);
+        const commitScore = project.rewards_offchain.score.breakdown.commits;
+        const prScore = project.rewards_offchain.score.breakdown.pullRequests;
+        const reviewScore = project.rewards_offchain.score.breakdown.reviews;
+        const issueScore = project.rewards_offchain.score.breakdown.issues;
         
-        // Estimar contagem de atividades baseado nos scores (valores aproximados)
         const activityCount = Math.round(
-          (project.metrics.commits.count || 0) + 
-          ((project.metrics.pull_requests.merged || 0) + (project.metrics.pull_requests.open || 0)) + 
-          (project.metrics.reviews.count || 0) + 
-          ((project.metrics.issues.open || 0) + (project.metrics.issues.closed || 0))
+          (project.metrics_offchain.commits.count || 0) + 
+          ((project.metrics_offchain.pull_requests.merged || 0) + (project.metrics_offchain.pull_requests.open || 0)) + 
+          (project.metrics_offchain.reviews.count || 0) + 
+          ((project.metrics_offchain.issues.open || 0) + (project.metrics_offchain.issues.closed || 0))
         );
         
-        return {
-          name: project.repository,
-          totalScore: project.reward.score.total,
-          weeklyReward: project.reward.monetary_reward,
-          monthlyReward: project.reward.monetary_reward * 4, // Estimativa mensal
-          rewardLevel: project.reward.level.name,
-          periodStart: new Date(project.reward.metadata.periodStart).toISOString(),
-          periodEnd: new Date(project.reward.metadata.periodEnd).toISOString(),
+        const transformedRepo = {
+          name: project.repositorie,
+          wallet: project.wallet,
+          totalScore: project.rewards_total.score.total,
+          rewardLevel: project.rewards_total.level.name,
+          periodStart: project.rawdata_onchain.metadata.period.start_date,
+          periodEnd: project.rawdata_onchain.metadata.period.end_date,
           commitScore: commitScore,
           prScore: prScore,
           reviewScore: reviewScore,
           issueScore: issueScore,
-          activityCount: activityCount
+          activityCount: activityCount,
+          transactionVolume: project.metrics_onchain.transaction_volume,
+          contractInteractions: project.metrics_onchain.contract_interactions,
+          uniqueWallets: project.metrics_onchain.unique_wallets,
+          rewards_total: project.rewards_total,
+          rewards_onchain: project.rewards_onchain,
+          rewards_offchain: project.rewards_offchain,
+          metrics_onchain: project.metrics_onchain,
+          metrics_offchain: project.metrics_offchain
         };
+        
+        console.log('Transformed repo:', transformedRepo);
+        return transformedRepo;
       });
+      
+      console.log('All transformed repos:', transformedRepos);
+      return transformedRepos;
     } catch (err) {
-      console.error('Erro ao processar dados da API:', err);
-      return mockRepositories;
+      console.error('Error processing API data:', err);
+      return [];
     }
   }, [apiData]);
 
@@ -383,13 +282,8 @@ export default function Home() {
         repo.name.toLowerCase().includes(search.toLowerCase()) ||
         repo.rewardLevel.toLowerCase().includes(search.toLowerCase())
       )
-      .sort((a, b) => {
-        if (sortBy === 'score') {
-          return b.totalScore - a.totalScore;
-        }
-        return b.weeklyReward - a.weeklyReward;
-      });
-  }, [uniqueRepositories, search, sortBy]);
+      .sort((a, b) => b.totalScore - a.totalScore);
+  }, [uniqueRepositories, search]);
 
   if (loading) {
     return (
@@ -402,32 +296,32 @@ export default function Home() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-sm border border-red-200">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error loading data</h2>
+          <p className="text-gray-600 mb-4">{error.message}</p>
+          <p className="text-sm text-gray-500">Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header
         search={search}
         setSearch={setSearch}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
         view={view}
         setView={setView}
       />
 
       <main className="flex-grow max-w-[2000px] mx-auto px-6 py-12 w-full">
-        {error && (
-          <div className="mb-8 bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800 flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <div>
-              <p className="font-medium">Warning: {error.message}</p>
-              <p className="text-sm">Displaying sample data. Please try again later.</p>
-            </div>
-          </div>
-        )}
-        
         {view === 'dashboard' ? (
           <DashboardStats 
             repositories={uniqueRepositories} 
-            dashboardData={apiData?.dashboard}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mt-8">

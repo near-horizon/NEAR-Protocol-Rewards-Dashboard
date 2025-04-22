@@ -7,8 +7,6 @@ import { Info } from 'lucide-react';
 interface Repository {
   name: string;
   totalScore: number;
-  weeklyReward: number;
-  monthlyReward?: number;
   rewardLevel: string;
   periodStart: string;
   periodEnd: string;
@@ -16,18 +14,52 @@ interface Repository {
   prScore?: number;
   reviewScore?: number;
   issueScore?: number;
-  activityCount?: number;
-}
-
-interface DashboardData {
-  total_commits: number;
-  total_projects: number;
-  total_monetary_rewards: number;
+  url?: string;
+  transactionVolume: number;
+  contractInteractions: number;
+  uniqueWallets: number;
+  rewards_total: {
+    total_reward: number;
+  };
+  rewards_onchain: {
+    total_reward: number;
+    score: {
+      breakdown: {
+        transactionVolume: number;
+        contractInteractions: number;
+        uniqueWallets: number;
+      };
+    };
+  };
+  rewards_offchain: {
+    total_reward: number;
+  };
+  metrics_onchain: {
+    transaction_volume: number;
+    contract_interactions: number;
+    unique_wallets: number;
+  };
+  metrics_offchain: {
+    commits: {
+      count: number;
+    };
+    pull_requests: {
+      open: number;
+      merged: number;
+      closed: number;
+    };
+    reviews: {
+      count: number;
+    };
+    issues: {
+      open: number;
+      closed: number;
+    };
+  };
 }
 
 interface DashboardStatsProps {
   repositories: Repository[];
-  dashboardData?: DashboardData;
 }
 
 const COLORS = {
@@ -41,20 +73,28 @@ const COLORS = {
   High: '#EC4899'     // Rosa
 };
 
-export function DashboardStats({ repositories, dashboardData }: DashboardStatsProps) {
-  // Usar dados da API se disponíveis, ou calcular a partir dos repositórios
-  const totalRewards = dashboardData?.total_monetary_rewards || 
-    repositories.reduce((acc, repo) => acc + repo.weeklyReward, 0);
+export function DashboardStats({ repositories }: DashboardStatsProps) {
+  // Calcular total de recompensas
+  const totalRewards = repositories.reduce((acc, repo) => acc + (repo.rewards_total?.total_reward || 0), 0);
     
-  const averageScore = repositories.length > 0 ? 
-    repositories.reduce((acc, repo) => acc + repo.totalScore, 0) / repositories.length : 
-    0;
+  // Calcular volume total de transações
+  const totalTransactionVolume = repositories.reduce((acc, repo) => acc + (repo.metrics_onchain?.transaction_volume || 0), 0);
     
-  const activeRepos = dashboardData?.total_projects || repositories.length;
+  // Número de projetos ativos
+  const activeRepos = repositories.length;
   
-  // Calcular total de atividades de todos os repositórios
-  const totalActivities = repositories.reduce((sum, repo) => sum + (repo.activityCount || 0), 0) || 
-    dashboardData?.total_commits || 0;
+  // Calcular total de atividades
+  const totalActivities = repositories.reduce((sum, repo) => {
+    const commits = repo.metrics_offchain?.commits?.count || 0;
+    const pullRequests = (repo.metrics_offchain?.pull_requests?.open || 0) + 
+                        (repo.metrics_offchain?.pull_requests?.merged || 0) + 
+                        (repo.metrics_offchain?.pull_requests?.closed || 0);
+    const reviews = repo.metrics_offchain?.reviews?.count || 0;
+    const issues = (repo.metrics_offchain?.issues?.open || 0) + 
+                  (repo.metrics_offchain?.issues?.closed || 0);
+    
+    return sum + commits + pullRequests + reviews + issues;
+  }, 0);
 
   // Preparar dados para o gráfico de contribuição
   const contributionBreakdownData = useMemo(() => {
@@ -79,6 +119,9 @@ export function DashboardStats({ repositories, dashboardData }: DashboardStatsPr
           prs: prs,
           reviews: reviews,
           issues: issues,
+          transactionVolume: repo.rewards_onchain?.score?.breakdown?.transactionVolume || 0,
+          contractInteractions: repo.rewards_onchain?.score?.breakdown?.contractInteractions || 0,
+          uniqueWallets: repo.rewards_onchain?.score?.breakdown?.uniqueWallets || 0,
           level: repo.rewardLevel,
           totalScore: repo.totalScore
         };
@@ -132,29 +175,32 @@ export function DashboardStats({ repositories, dashboardData }: DashboardStatsPr
 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-600">Average Score</p>
+            <p className="text-sm font-medium text-gray-600">Total Volume Transaction</p>
             <div className="group relative">
               <Info size={16} className="text-gray-400" />
               <div className="absolute right-0 mt-2 w-64 p-3 bg-gray-800 text-white text-sm rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                <p className="font-medium mb-1">Performance Score</p>
-                <p className="text-gray-300">Average score calculated from commit quality, PR impact, review contributions, and issue management</p>
+                <p className="font-medium mb-1">Transaction Volume</p>
+                <p className="text-gray-300">Total volume transacted between all wallets within projects on the NEAR network</p>
               </div>
             </div>
           </div>
-          <p className="text-3xl font-bold text-purple-500 mt-2">{averageScore.toFixed(1)}</p>
+          <div className="flex items-baseline gap-2">
+            <p className="text-3xl font-bold text-purple-500 mt-2">{totalTransactionVolume.toLocaleString()}</p>
+            <p className="text-lg font-medium text-gray-500">NEAR</p>
+          </div>
           <div className="mt-2 text-sm text-gray-500">
-            Per repository
+            Across all wallets
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-600">Active Repositories</p>
+            <p className="text-sm font-medium text-gray-600">Active Projects</p>
             <div className="group relative">
               <Info size={16} className="text-gray-400" />
               <div className="absolute right-0 mt-2 w-64 p-3 bg-gray-800 text-white text-sm rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
                 <p className="font-medium mb-1">Repository Count</p>
-                <p className="text-gray-300">Number of repositories actively participating in the rewards program</p>
+                <p className="text-gray-300">Number of projects actively participating in the rewards program</p>
               </div>
             </div>
           </div>
@@ -216,11 +262,16 @@ export function DashboardStats({ repositories, dashboardData }: DashboardStatsPr
                     return [`${value.toFixed(1)} points`, name];
                   }}
                   labelFormatter={(label) => label}
+                  contentStyle={{ backgroundColor: 'white', border: '1px solid #E5E7EB' }}
+                  labelStyle={{ color: '#111827', fontWeight: 500 }}
                 />
                 <Bar dataKey="commits" stackId="a" fill="#3B82F6" name="Commits" />
                 <Bar dataKey="prs" stackId="a" fill="#10B981" name="Pull Requests" />
                 <Bar dataKey="reviews" stackId="a" fill="#8B5CF6" name="Reviews" />
                 <Bar dataKey="issues" stackId="a" fill="#F97316" name="Issues" />
+                <Bar dataKey="transactionVolume" stackId="a" fill="#EC4899" name="Transaction Volume" />
+                <Bar dataKey="contractInteractions" stackId="a" fill="#F59E0B" name="Contract Interactions" />
+                <Bar dataKey="uniqueWallets" stackId="a" fill="#6366F1" name="Unique Wallets" />
               </BarChart>
             </ResponsiveContainer>
           </div>

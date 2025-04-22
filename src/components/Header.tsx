@@ -1,25 +1,16 @@
 'use client';
 
 import React from 'react';
-import { Search, ArrowUpDown, LayoutDashboard, List } from 'lucide-react';
+import { Search, LayoutDashboard, List, ExternalLink } from 'lucide-react';
 
 interface HeaderProps {
   search: string;
   setSearch: (value: string) => void;
-  sortBy: 'score' | 'reward';
-  setSortBy: (value: 'score' | 'reward') => void;
   view: 'dashboard' | 'list';
   setView: (value: 'dashboard' | 'list') => void;
 }
 
-export function Header({ 
-  search, 
-  setSearch, 
-  sortBy, 
-  setSortBy, 
-  view, 
-  setView,
-}: HeaderProps) {
+export function Header({ search, setSearch, view, setView }: HeaderProps) {
   return (
     <div className="bg-gradient-to-b from-white to-gray-50 border-b border-gray-200 sticky top-0 z-50 backdrop-blur-sm">
       <div className="max-w-[2000px] mx-auto px-4 sm:px-6 py-4">
@@ -39,7 +30,7 @@ export function Header({
               <input
                 type="text"
                 placeholder="Search repositories..."
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-gray-700 placeholder-gray-500"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -61,7 +52,7 @@ export function Header({
               </button>
               <button
                 onClick={() => setView('list')}
-                className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg transition-colors ${
+                className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg transition-colors ${
                   view === 'list'
                     ? 'bg-blue-50 text-blue-600 border border-blue-100'
                     : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
@@ -71,16 +62,16 @@ export function Header({
                 <span className="text-sm">List</span>
               </button>
 
-              {/* Sort Button */}
-              <button
-                onClick={() => setSortBy(sortBy === 'score' ? 'reward' : 'score')}
-                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+              {/* View Raw Data Link */}
+              <a 
+                href="https://near-protocol-rewards-tracking.com/dashboard-test" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 bg-white text-blue-600 hover:bg-gray-50 transition-colors"
               >
-                <ArrowUpDown size={18} />
-                <span className="text-sm">
-                  Sort by {sortBy === 'score' ? 'Score' : 'Reward'}
-                </span>
-              </button>
+                <ExternalLink size={18} />
+                <span className="text-sm">View Raw Data</span>
+              </a>
             </div>
           </div>
         </div>
