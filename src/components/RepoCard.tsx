@@ -219,7 +219,7 @@ export function RepoCard({ repo }: RepoCardProps) {
                   Transaction Volume
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{repo.transactionVolume.toLocaleString()}</span>
+                  <span className="font-medium text-gray-900">{Math.round(repo.transactionVolume).toLocaleString()}</span>
                 </div>
               </div>
               <div className="flex items-center justify-between text-sm">
