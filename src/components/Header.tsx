@@ -64,7 +64,7 @@ export function Header({ search, setSearch, view, setView }: HeaderProps) {
 
               {/* View Raw Data Link */}
               <a 
-                href="https://near-protocol-rewards-tracking.com/dashboard-test" 
+                href="https://near-protocol-rewards-tracking.com/dashboard" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 bg-white text-blue-600 hover:bg-gray-50 transition-colors"
