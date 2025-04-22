@@ -134,16 +134,7 @@ export function RepoCard({ repo }: RepoCardProps) {
               Total Reward
             </div>
             <p className="text-2xl font-bold text-green-700">${repo.rewards_total?.total_reward.toLocaleString()}</p>
-            <div className="mt-2 text-sm flex flex-col gap-1">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 whitespace-nowrap pr-2">Onchain Reward:</span>
-                <span className="font-medium text-gray-900 text-right">${repo.rewards_onchain?.total_reward?.toLocaleString() || '0'}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600 whitespace-nowrap pr-2">Offchain Reward:</span>
-                <span className="font-medium text-gray-900 text-right">${repo.rewards_offchain?.total_reward?.toLocaleString() || '0'}</span>
-              </div>
-            </div>
+            <div className="mt-2 text-sm text-gray-600">Reward calculated from project metrics</div>
           </div>
           <div className="bg-gradient-to-br from-blue-50 to-blue-50/30 rounded-lg p-4 border border-blue-100 shadow-sm hover:shadow-md transition-all">
             <div className="flex items-center gap-2 text-sm text-blue-600 font-medium mb-1">
