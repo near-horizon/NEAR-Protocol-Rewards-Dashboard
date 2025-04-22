@@ -202,36 +202,32 @@ export function RepoCard({ repo }: RepoCardProps) {
             <Link size={16} className="text-blue-500" />
             Onchain Metrics
           </h4>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-gray-600">
-                  <Coins size={16} />
-                  Transaction Volume
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{Math.round(repo.transactionVolume).toLocaleString()}</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-gray-600">
-                  <FileCode size={16} />
-                  Contract Interactions
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{repo.contractInteractions.toLocaleString()}</span>
-                </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 text-gray-600">
+                <Coins size={16} />
+                Transaction Volume
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-gray-900">{Math.round(repo.transactionVolume).toLocaleString()}</span>
               </div>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-gray-600">
-                  <Users size={16} />
-                  Unique Wallets
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{repo.uniqueWallets.toLocaleString()}</span>
-                </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 text-gray-600">
+                <Users size={16} />
+                Unique Wallets
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-gray-900">{repo.uniqueWallets.toLocaleString()}</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 text-gray-600">
+                <FileCode size={16} />
+                Contract Interactions
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-gray-900">{repo.contractInteractions.toLocaleString()}</span>
               </div>
             </div>
           </div>
