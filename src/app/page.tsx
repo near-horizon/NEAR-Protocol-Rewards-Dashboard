@@ -233,6 +233,7 @@ export default function Home() {
         
         const transformedRepo = {
           name: project.repositorie,
+          wallet: project.wallet,
           totalScore: project.rewards_total.score.total,
           rewardLevel: project.rewards_total.level.name,
           periodStart: project.rawdata_onchain.metadata.period.start_date,

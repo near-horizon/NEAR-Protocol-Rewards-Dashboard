@@ -5,6 +5,7 @@ import { ExternalLink, GitCommit, GitPullRequest, MessageSquare, CircleDot, Awar
 
 interface Repository {
   name: string;
+  wallet: string;
   totalScore: number;
   rewardLevel: string;
   periodStart: string;
@@ -97,6 +98,12 @@ export function RepoCard({ repo }: RepoCardProps) {
   // Construir URL do GitHub se não fornecido
   const repoUrl = repo.url || `https://github.com/${repo.name}`;
 
+  // Função para truncar a wallet
+  const truncateWallet = (wallet: string) => {
+    if (!wallet || wallet.length <= 20) return wallet;
+    return `${wallet.slice(0, 12)}...${wallet.slice(-8)}`;
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200">
       {/* Header Section */}
@@ -116,7 +123,10 @@ export function RepoCard({ repo }: RepoCardProps) {
                 <ExternalLink size={16} />
               </a>
             </div>
-            <p className="text-sm text-gray-500">{repo.name.split('/')[0]}</p>
+            <p className="text-sm text-gray-500">
+              {repo.name.split('/')[0]}
+              {repo.wallet && repo.wallet.trim() !== '' && ` - ${truncateWallet(repo.wallet)}`}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${levelColors[repo.rewardLevel] || 'bg-gray-100 text-gray-800 border-gray-200'}`}>
