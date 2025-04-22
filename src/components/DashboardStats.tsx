@@ -23,6 +23,13 @@ interface Repository {
   };
   rewards_onchain: {
     total_reward: number;
+    score: {
+      breakdown: {
+        transactionVolume: number;
+        contractInteractions: number;
+        uniqueWallets: number;
+      };
+    };
   };
   rewards_offchain: {
     total_reward: number;
@@ -112,9 +119,9 @@ export function DashboardStats({ repositories }: DashboardStatsProps) {
           prs: prs,
           reviews: reviews,
           issues: issues,
-          transactionVolume: repo.transactionVolume || 0,
-          contractInteractions: repo.contractInteractions || 0,
-          uniqueWallets: repo.uniqueWallets || 0,
+          transactionVolume: repo.rewards_onchain?.score?.breakdown?.transactionVolume || 0,
+          contractInteractions: repo.rewards_onchain?.score?.breakdown?.contractInteractions || 0,
+          uniqueWallets: repo.rewards_onchain?.score?.breakdown?.uniqueWallets || 0,
           level: repo.rewardLevel,
           totalScore: repo.totalScore
         };
