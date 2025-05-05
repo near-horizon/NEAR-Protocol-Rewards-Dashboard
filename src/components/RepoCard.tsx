@@ -1,22 +1,21 @@
 'use client';
 
 import React from 'react';
-import { ExternalLink, GitCommit, GitPullRequest, MessageSquare, CircleDot, Award, Clock, Users, Zap, BarChart2, Link, Coins, FileCode } from 'lucide-react';
+import { ExternalLink, GitCommit, GitPullRequest, MessageSquare, CircleDot, Award, Clock, Users, Zap, BarChart2, Link, Coins, FileCode, Info, Github } from 'lucide-react';
 
 interface Repository {
-  name: string;
+  project: string;
   wallet: string;
+  github: string;
+  repository: string[];
+  period: string;
+  timestamp: string;
   totalScore: number;
   rewardLevel: string;
-  periodStart: string;
-  periodEnd: string;
-  commitScore?: number;
-  prScore?: number;
-  reviewScore?: number;
-  issueScore?: number;
-  url?: string;
-  rewards_total: {
-    total_reward: number;
+  metrics_onchain: {
+    transaction_volume: number;
+    contract_interactions: number;
+    unique_wallets: number;
   };
   rewards_onchain: {
     total_reward: number;
@@ -40,9 +39,9 @@ interface Repository {
       closed: number;
     };
   };
-  transactionVolume: number;
-  contractInteractions: number;
-  uniqueWallets: number;
+  rewards_total: {
+    total_reward: number;
+  };
 }
 
 interface RepoCardProps {
@@ -81,13 +80,21 @@ export function RepoCard({ repo }: RepoCardProps) {
   };
 
   // Calculate activity scores
-  const commitScore = repo.commitScore || (repo.totalScore * 0.25);
-  const prScore = repo.prScore || (repo.totalScore * 0.20);
-  const reviewScore = repo.reviewScore || (repo.totalScore * 0.40);
-  const issueScore = repo.issueScore || (repo.totalScore * 0.15);
+  const commitScore = repo.metrics_offchain?.commits?.count || 0;
+  const prScore = (repo.metrics_offchain?.pull_requests?.open || 0) + (repo.metrics_offchain?.pull_requests?.merged || 0);
+  const reviewScore = repo.metrics_offchain?.reviews?.count || 0;
+  const issueScore = (repo.metrics_offchain?.issues?.open || 0) + (repo.metrics_offchain?.issues?.closed || 0);
 
   // Format dates
   const formatDate = (dateString: string) => {
+    // Extrai o ano e mês do formato YYYY-MM
+    if (dateString.match(/^\d{4}-\d{2}$/)) {
+      const [year, month] = dateString.split('-');
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      return `${monthNames[parseInt(month) - 1]} ${year}`;
+    }
+    
+    // Formato padrão para outros formatos de data
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -95,8 +102,19 @@ export function RepoCard({ repo }: RepoCardProps) {
     });
   };
 
-  // Construir URL do GitHub se não fornecido
-  const repoUrl = repo.url || `https://github.com/${repo.name}`;
+  // Extrair data de timestamp
+  const formatTimestamp = (timestamp: string) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  // Construir URL do projeto
+  const projectUrl = repo.github || `https://near.org/`;
 
   // Função para truncar a wallet
   const truncateWallet = (wallet: string) => {
@@ -112,10 +130,10 @@ export function RepoCard({ repo }: RepoCardProps) {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <h3 className="text-xl font-bold text-gray-900">
-                {repo.name.split('/')[1] || repo.name}
+                {repo.project}
               </h3>
               <a 
-                href={repoUrl} 
+                href={projectUrl} 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -124,8 +142,7 @@ export function RepoCard({ repo }: RepoCardProps) {
               </a>
             </div>
             <p className="text-sm text-gray-500">
-              {repo.name.split('/')[0]}
-              {repo.wallet && repo.wallet.trim() !== '' && ` - ${truncateWallet(repo.wallet)}`}
+              {repo.wallet && repo.wallet.trim() !== '' && truncateWallet(repo.wallet)}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -151,7 +168,7 @@ export function RepoCard({ repo }: RepoCardProps) {
               <BarChart2 size={16} />
               Performance Score
             </div>
-            <p className="text-2xl font-bold text-blue-700">{repo.totalScore.toFixed(0)}</p>
+            <p className="text-2xl font-bold text-blue-700">{repo.totalScore?.toFixed(0) || '0'}</p>
             <div className="mt-2 text-sm text-gray-600">Overall repository performance</div>
           </div>
         </div>
@@ -161,6 +178,12 @@ export function RepoCard({ repo }: RepoCardProps) {
           <h4 className="font-semibold text-gray-900 flex items-center gap-2">
             <Zap size={16} className="text-purple-500" />
             Activity Metrics
+            <div className="relative group">
+              <Info size={14} className="text-gray-400 cursor-help" />
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 -translate-y-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+                Breakdown Values
+              </div>
+            </div>
           </h4>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-2">
@@ -170,7 +193,7 @@ export function RepoCard({ repo }: RepoCardProps) {
                   Commits
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{commitScore.toFixed(0)}</span>
+                  <span className="font-medium text-gray-900">{commitScore}</span>
                 </div>
               </div>
               <div className="flex items-center justify-between text-sm">
@@ -179,7 +202,7 @@ export function RepoCard({ repo }: RepoCardProps) {
                   Pull Requests
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{prScore.toFixed(0)}</span>
+                  <span className="font-medium text-gray-900">{prScore}</span>
                 </div>
               </div>
             </div>
@@ -190,7 +213,7 @@ export function RepoCard({ repo }: RepoCardProps) {
                   Reviews
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{reviewScore.toFixed(0)}</span>
+                  <span className="font-medium text-gray-900">{reviewScore}</span>
                 </div>
               </div>
               <div className="flex items-center justify-between text-sm">
@@ -199,7 +222,7 @@ export function RepoCard({ repo }: RepoCardProps) {
                   Issues
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{issueScore.toFixed(0)}</span>
+                  <span className="font-medium text-gray-900">{issueScore}</span>
                 </div>
               </div>
             </div>
@@ -211,6 +234,12 @@ export function RepoCard({ repo }: RepoCardProps) {
           <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-2">
             <Link size={16} className="text-blue-500" />
             Onchain Metrics
+            <div className="relative group">
+              <Info size={14} className="text-gray-400 cursor-help" />
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 -translate-y-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+                Absolute Values just for mainnet
+              </div>
+            </div>
           </h4>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center justify-between text-sm">
@@ -219,7 +248,7 @@ export function RepoCard({ repo }: RepoCardProps) {
                 Transaction Volume
               </span>
               <div className="flex items-center gap-2">
-                <span className="font-medium text-gray-900">{Math.round(repo.transactionVolume).toLocaleString()}</span>
+                <span className="font-medium text-gray-900">{Math.round(repo.metrics_onchain?.transaction_volume || 0).toLocaleString()}</span>
               </div>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -228,7 +257,7 @@ export function RepoCard({ repo }: RepoCardProps) {
                 Unique Wallets
               </span>
               <div className="flex items-center gap-2">
-                <span className="font-medium text-gray-900">{repo.uniqueWallets.toLocaleString()}</span>
+                <span className="font-medium text-gray-900">{(repo.metrics_onchain?.unique_wallets || 0).toLocaleString()}</span>
               </div>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -237,11 +266,37 @@ export function RepoCard({ repo }: RepoCardProps) {
                 Contract Interactions
               </span>
               <div className="flex items-center gap-2">
-                <span className="font-medium text-gray-900">{repo.contractInteractions.toLocaleString()}</span>
+                <span className="font-medium text-gray-900">{(repo.metrics_onchain?.contract_interactions || 0).toLocaleString()}</span>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Github Projects */}
+        {repo.repository && repo.repository.length > 0 && (
+          <div className="mt-4">
+            <h4 className="font-semibold text-gray-900 flex items-center gap-2 mb-2">
+              <Github size={16} className="text-gray-700" />
+              Github Projects
+            </h4>
+            <div className="space-y-2">
+              {repo.repository.map((repoUrl, index) => (
+                <div key={index} className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2 text-gray-600 truncate">
+                    <a 
+                      href={`https://github.com/${repoUrl}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-blue-500 hover:underline truncate"
+                    >
+                      {repoUrl}
+                    </a>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Footer Section */}
@@ -250,37 +305,41 @@ export function RepoCard({ repo }: RepoCardProps) {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
               <Clock size={14} />
-              <span>Current Period: {formatDate(repo.periodStart)} - {formatDate(repo.periodEnd)}</span>
+              <span>Current Period: {formatDate(repo.period)} - {formatTimestamp(repo.timestamp)}</span>
             </div>
           </div>
           <div className="flex gap-2">
-            <a 
-              href={`${repoUrl}/pulls`} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-gray-400 hover:text-gray-600 transition-colors p-1"
-              title="View Pull Requests"
-            >
-              <GitPullRequest size={16} />
-            </a>
-            <a 
-              href={`${repoUrl}/issues`} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-gray-400 hover:text-gray-600 transition-colors p-1"
-              title="View Issues"
-            >
-              <MessageSquare size={16} />
-            </a>
-            <a 
-              href={`${repoUrl}/graphs/contributors`} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-gray-400 hover:text-gray-600 transition-colors p-1"
-              title="View Contributors"
-            >
-              <Users size={16} />
-            </a>
+            {repo.repository && repo.repository.length > 0 && (
+              <>
+                <a 
+                  href={`https://github.com/${repo.repository[0]}/pulls`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                  title="View Pull Requests"
+                >
+                  <GitPullRequest size={16} />
+                </a>
+                <a 
+                  href={`https://github.com/${repo.repository[0]}/issues`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                  title="View Issues"
+                >
+                  <MessageSquare size={16} />
+                </a>
+                <a 
+                  href={`https://github.com/${repo.repository[0]}/graphs/contributors`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                  title="View Contributors"
+                >
+                  <Users size={16} />
+                </a>
+              </>
+            )}
           </div>
         </div>
       </div>
