@@ -172,7 +172,7 @@ export default function Home() {
         const timeoutId = setTimeout(() => controller.abort(), 10000);
         
         try {
-          const response = await fetch('https://near-protocol-rewards-tracking.com/dashboard', {
+          const response = await fetch('https://near-protocol-rewards-tracking.com/dashboard-test', {
             method: 'GET',
             signal: controller.signal,
             headers: {
@@ -219,42 +219,38 @@ export default function Home() {
     try {
       const transformedRepos = apiData.map(project => {
         console.log('Processing project:', project);
-        const commitScore = project.rewards_offchain.score.breakdown.commits;
-        const prScore = project.rewards_offchain.score.breakdown.pullRequests;
-        const reviewScore = project.rewards_offchain.score.breakdown.reviews;
-        const issueScore = project.rewards_offchain.score.breakdown.issues;
         
-        const activityCount = Math.round(
-          (project.metrics_offchain.commits.count || 0) + 
-          ((project.metrics_offchain.pull_requests.merged || 0) + (project.metrics_offchain.pull_requests.open || 0)) + 
-          (project.metrics_offchain.reviews.count || 0) + 
-          ((project.metrics_offchain.issues.open || 0) + (project.metrics_offchain.issues.closed || 0))
-        );
-        
-        const transformedRepo = {
-          name: project.repositorie,
-          wallet: project.wallet,
-          totalScore: project.rewards_total.score.total,
-          rewardLevel: project.rewards_total.level.name,
-          periodStart: project.rawdata_onchain.metadata.period.start_date,
-          periodEnd: project.rawdata_onchain.metadata.period.end_date,
-          commitScore: commitScore,
-          prScore: prScore,
-          reviewScore: reviewScore,
-          issueScore: issueScore,
-          activityCount: activityCount,
-          transactionVolume: project.metrics_onchain.transaction_volume,
-          contractInteractions: project.metrics_onchain.contract_interactions,
-          uniqueWallets: project.metrics_onchain.unique_wallets,
-          rewards_total: project.rewards_total,
-          rewards_onchain: project.rewards_onchain,
-          rewards_offchain: project.rewards_offchain,
-          metrics_onchain: project.metrics_onchain,
-          metrics_offchain: project.metrics_offchain
+        // Criar objeto Repository com a nova estrutura
+        return {
+          project: project.project || 'Unknown Project',
+          wallet: project.wallet || '',
+          github: project.github || '',
+          repository: Array.isArray(project.repository) ? project.repository : [],
+          period: project.period || '',
+          timestamp: project.timestamp || '',
+          totalScore: project.rewards_total?.score?.total || 0,
+          rewardLevel: project.rewards_total?.level?.name || 'Unknown',
+          metrics_onchain: project.metrics_onchain || {
+            transaction_volume: 0,
+            contract_interactions: 0,
+            unique_wallets: 0
+          },
+          rewards_onchain: project.rewards_onchain || {
+            total_reward: 0
+          },
+          rewards_offchain: project.rewards_offchain || {
+            total_reward: 0
+          },
+          metrics_offchain: project.metrics_offchain || {
+            commits: { count: 0 },
+            pull_requests: { open: 0, merged: 0 },
+            reviews: { count: 0 },
+            issues: { open: 0, closed: 0 }
+          },
+          rewards_total: project.rewards_total || {
+            total_reward: 0
+          }
         };
-        
-        console.log('Transformed repo:', transformedRepo);
-        return transformedRepo;
       });
       
       console.log('All transformed repos:', transformedRepos);
@@ -265,12 +261,12 @@ export default function Home() {
     }
   }, [apiData]);
 
-  // Ensure unique repositories by name
+  // Ensure unique repositories by wallet
   const uniqueRepositories = useMemo(() => {
     const repoMap = new Map();
     repositories.forEach(repo => {
-      if (!repoMap.has(repo.name)) {
-        repoMap.set(repo.name, repo);
+      if (!repoMap.has(repo.wallet)) {
+        repoMap.set(repo.wallet, repo);
       }
     });
     return Array.from(repoMap.values());
@@ -279,8 +275,9 @@ export default function Home() {
   const filteredAndSortedRepos = useMemo(() => {
     return uniqueRepositories
       .filter(repo => 
-        repo.name.toLowerCase().includes(search.toLowerCase()) ||
-        repo.rewardLevel.toLowerCase().includes(search.toLowerCase())
+        repo.project.toLowerCase().includes(search.toLowerCase()) ||
+        repo.rewardLevel.toLowerCase().includes(search.toLowerCase()) ||
+        (repo.wallet && repo.wallet.toLowerCase().includes(search.toLowerCase()))
       )
       .sort((a, b) => b.totalScore - a.totalScore);
   }, [uniqueRepositories, search]);
@@ -326,7 +323,7 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mt-8">
             {filteredAndSortedRepos.map((repo) => (
-              <RepoCard key={repo.name} repo={repo} />
+              <RepoCard key={repo.wallet || repo.project} repo={repo} />
             ))}
           </div>
         )}
@@ -420,7 +417,7 @@ export default function Home() {
               <h3 className="text-sm font-semibold text-gray-900 mb-4">Program Updates</h3>
               <div className="space-y-3 text-sm text-gray-600">
                 <p>Last updated: {new Date().toLocaleDateString()}</p>
-                <p>Current reward period: {uniqueRepositories[0]?.periodStart.split('T')[0]} to {uniqueRepositories[0]?.periodEnd.split('T')[0]}</p>
+                <p>Current reward period: {uniqueRepositories[0]?.period || 'N/A'}</p>
                 <p>Active repositories: {uniqueRepositories.length}</p>
               </div>
             </div>
