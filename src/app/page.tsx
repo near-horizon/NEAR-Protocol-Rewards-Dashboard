@@ -172,7 +172,7 @@ export default function Home() {
         const timeoutId = setTimeout(() => controller.abort(), 10000);
         
         try {
-          const response = await fetch('https://near-protocol-rewards-tracking.com/dashboard-test', {
+          const response = await fetch('https://near-protocol-rewards-tracking.com/dashboard', {
             method: 'GET',
             signal: controller.signal,
             headers: {
