@@ -29,6 +29,7 @@ interface ProjectData {
   project: string;
   wallet: string;
   github: string;
+  website?: string;
   repositorie: string;
   period: string;
   timestamp: string;
@@ -225,6 +226,7 @@ export default function Home() {
           project: project.project || 'Unknown Project',
           wallet: project.wallet || '',
           github: project.github || '',
+          website: project.website || '',
           repository: Array.isArray(project.repository) ? project.repository : [],
           period: project.period || '',
           timestamp: project.timestamp || '',
