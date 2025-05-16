@@ -5,39 +5,39 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Info } from 'lucide-react';
 
 interface Repository {
-  name: string;
+  project: string;
+  wallet: string;
+  github: string;
+  repository: string[];
+  period: string;
+  timestamp: string;
   totalScore: number;
   rewardLevel: string;
-  periodStart: string;
-  periodEnd: string;
-  commitScore?: number;
-  prScore?: number;
-  reviewScore?: number;
-  issueScore?: number;
-  url?: string;
-  transactionVolume: number;
-  contractInteractions: number;
-  uniqueWallets: number;
-  rewards_total: {
-    total_reward: number;
+  metrics_onchain: {
+    transaction_volume: number;
+    contract_interactions: number;
+    unique_wallets: number;
   };
   rewards_onchain: {
     total_reward: number;
-    score: {
-      breakdown: {
-        transactionVolume: number;
-        contractInteractions: number;
-        uniqueWallets: number;
+    score?: {
+      breakdown?: {
+        transactionVolume?: number;
+        contractInteractions?: number;
+        uniqueWallets?: number;
       };
     };
   };
   rewards_offchain: {
     total_reward: number;
-  };
-  metrics_onchain: {
-    transaction_volume: number;
-    contract_interactions: number;
-    unique_wallets: number;
+    score?: {
+      breakdown?: {
+        commits?: number;
+        pullRequests?: number;
+        reviews?: number;
+        issues?: number;
+      };
+    };
   };
   metrics_offchain: {
     commits: {
@@ -46,7 +46,6 @@ interface Repository {
     pull_requests: {
       open: number;
       merged: number;
-      closed: number;
     };
     reviews: {
       count: number;
@@ -55,6 +54,9 @@ interface Repository {
       open: number;
       closed: number;
     };
+  };
+  rewards_total: {
+    total_reward: number;
   };
 }
 
@@ -87,8 +89,7 @@ export function DashboardStats({ repositories }: DashboardStatsProps) {
   const totalActivities = repositories.reduce((sum, repo) => {
     const commits = repo.metrics_offchain?.commits?.count || 0;
     const pullRequests = (repo.metrics_offchain?.pull_requests?.open || 0) + 
-                        (repo.metrics_offchain?.pull_requests?.merged || 0) + 
-                        (repo.metrics_offchain?.pull_requests?.closed || 0);
+                        (repo.metrics_offchain?.pull_requests?.merged || 0);
     const reviews = repo.metrics_offchain?.reviews?.count || 0;
     const issues = (repo.metrics_offchain?.issues?.open || 0) + 
                   (repo.metrics_offchain?.issues?.closed || 0);
@@ -103,15 +104,16 @@ export function DashboardStats({ repositories }: DashboardStatsProps) {
       .sort((a, b) => b.totalScore - a.totalScore)
       .slice(0, 8)
       .map(repo => {
-        // Extrair apenas o nome do repositório sem o namespace
-        const repoNameParts = repo.name.split('/');
-        const displayName = repoNameParts.length > 1 ? repoNameParts[1] : repo.name;
+        // Usar nome do projeto como label
+        const displayName = repo.project || 'Unknown Project';
         
-        // Usar os scores detalhados da API, se disponíveis, ou estimá-los
-        const commits = repo.commitScore !== undefined ? repo.commitScore : repo.totalScore * 0.25;
-        const prs = repo.prScore !== undefined ? repo.prScore : repo.totalScore * 0.20;
-        const reviews = repo.reviewScore !== undefined ? repo.reviewScore : repo.totalScore * 0.40;
-        const issues = repo.issueScore !== undefined ? repo.issueScore : repo.totalScore * 0.15;
+        // Usar os scores detalhados da API, se disponíveis, ou calcular baseado nos valores das métricas
+        const commits = repo.rewards_offchain?.score?.breakdown?.commits || repo.metrics_offchain?.commits?.count || 0;
+        const prs = repo.rewards_offchain?.score?.breakdown?.pullRequests || 
+          ((repo.metrics_offchain?.pull_requests?.open || 0) + (repo.metrics_offchain?.pull_requests?.merged || 0));
+        const reviews = repo.rewards_offchain?.score?.breakdown?.reviews || repo.metrics_offchain?.reviews?.count || 0;
+        const issues = repo.rewards_offchain?.score?.breakdown?.issues || 
+          ((repo.metrics_offchain?.issues?.open || 0) + (repo.metrics_offchain?.issues?.closed || 0));
         
         return {
           name: displayName,
