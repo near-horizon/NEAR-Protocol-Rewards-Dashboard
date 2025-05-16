@@ -7,6 +7,7 @@ interface Repository {
   project: string;
   wallet: string;
   github: string;
+  website?: string;
   repository: string[];
   period: string;
   timestamp: string;
@@ -114,7 +115,9 @@ export function RepoCard({ repo }: RepoCardProps) {
   };
 
   // Construir URL do projeto
-  const projectUrl = repo.github || `https://near.org/`;
+  const projectUrl = repo.website
+    ? repo.website.startsWith('http') ? repo.website : `https://${repo.website}`
+    : 'https://near.org/';
 
   // Função para truncar a wallet
   const truncateWallet = (wallet: string) => {
