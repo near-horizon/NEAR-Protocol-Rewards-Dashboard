@@ -4,64 +4,51 @@ import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Info } from 'lucide-react';
 
-interface Repository {
-  project: string;
-  wallet: string;
-  github: string;
-  repository: string[];
-  period: string;
-  timestamp: string;
-  totalScore: number;
-  rewardLevel: string;
-  metrics_onchain: {
-    transaction_volume: number;
-    contract_interactions: number;
-    unique_wallets: number;
+// Tipos para os dados da API
+interface ApiResponse {
+  summary: {
+    totalRewards: number;
+    totalVolumeTransaction: number;
+    activeProjects: number;
+    totalActivities: {
+      commits: number;
+      pullRequests: number;
+      reviews: number;
+      issues: number;
+    };
+    totalActivitiesSum: number;
   };
-  rewards_onchain: {
-    total_reward: number;
-    score?: {
-      breakdown?: {
-        transactionVolume?: number;
-        contractInteractions?: number;
-        uniqueWallets?: number;
+  charts: {
+    topPerformerBreakdown: Array<{
+      project: string;
+      onchainScore: number;
+      offchainBreakdown: {
+        commits: number;
+        pullRequests: number;
+        reviews: number;
+        issues: number;
       };
-    };
-  };
-  rewards_offchain: {
-    total_reward: number;
-    score?: {
-      breakdown?: {
-        commits?: number;
-        pullRequests?: number;
-        reviews?: number;
-        issues?: number;
-      };
-    };
-  };
-  metrics_offchain: {
-    commits: {
+      totalScore: number;
+      tier: string;
+    }>;
+    distributionByLevel: Array<{
+      tier: string;
       count: number;
-    };
-    pull_requests: {
-      open: number;
-      merged: number;
-    };
-    reviews: {
-      count: number;
-    };
-    issues: {
-      open: number;
-      closed: number;
-    };
+      totalReward: number;
+      percentage: number;
+    }>;
   };
-  rewards_total: {
-    total_reward: number;
+  metadata: {
+    period: string;
+    generatedAt: string;
+    totalProjectsProcessed: number;
+    successfulProjects: number;
+    failedProjects: number;
   };
 }
 
 interface DashboardStatsProps {
-  repositories: Repository[];
+  apiData: ApiResponse | null;
 }
 
 const COLORS = {
@@ -72,87 +59,50 @@ const COLORS = {
   Member: '#8B5CF6',  // Roxo
   Low: '#64748B',     // Cinza
   Medium: '#10B981',  // Verde
-  High: '#EC4899'     // Rosa
+  High: '#EC4899',    // Rosa
+  Contributor: '#10B981', // Verde
+  Explorer: '#8B5CF6'     // Roxo
 };
 
-export function DashboardStats({ repositories }: DashboardStatsProps) {
-  // Calcular total de recompensas
-  const totalRewards = repositories.reduce((acc, repo) => acc + (repo.rewards_total?.total_reward || 0), 0);
-    
-  // Calcular volume total de transações
-  const totalTransactionVolume = repositories.reduce((acc, repo) => acc + (repo.metrics_onchain?.transaction_volume || 0), 0);
-    
-  // Número de projetos ativos
-  const activeRepos = repositories.length;
-  
-  // Calcular total de atividades
-  const totalActivities = repositories.reduce((sum, repo) => {
-    const commits = repo.metrics_offchain?.commits?.count || 0;
-    const pullRequests = (repo.metrics_offchain?.pull_requests?.open || 0) + 
-                        (repo.metrics_offchain?.pull_requests?.merged || 0);
-    const reviews = repo.metrics_offchain?.reviews?.count || 0;
-    const issues = (repo.metrics_offchain?.issues?.open || 0) + 
-                  (repo.metrics_offchain?.issues?.closed || 0);
-    
-    return sum + commits + pullRequests + reviews + issues;
-  }, 0);
+export function DashboardStats({ apiData }: DashboardStatsProps) {
+  // Usar dados do summary da API
+  const totalRewards = apiData?.summary?.totalRewards || 0;
+  const totalTransactionVolume = apiData?.summary?.totalVolumeTransaction || 0;
+  const activeProjects = apiData?.summary?.activeProjects || 0;
+  const totalActivitiesSum = apiData?.summary?.totalActivitiesSum || 0;
 
-  // Preparar dados para o gráfico de contribuição
+  // Preparar dados para o gráfico de contribuição (temporariamente quebrado)
   const contributionBreakdownData = useMemo(() => {
-    // Ordenar repositórios por pontuação total (decrescente) e pegar os top 8
-    return [...repositories]
-      .sort((a, b) => b.totalScore - a.totalScore)
-      .slice(0, 8)
-      .map(repo => {
-        // Usar nome do projeto como label
-        const displayName = repo.project || 'Unknown Project';
-        
-        // Usar os scores detalhados da API, se disponíveis, ou calcular baseado nos valores das métricas
-        const commits = repo.rewards_offchain?.score?.breakdown?.commits || repo.metrics_offchain?.commits?.count || 0;
-        const prs = repo.rewards_offchain?.score?.breakdown?.pullRequests || 
-          ((repo.metrics_offchain?.pull_requests?.open || 0) + (repo.metrics_offchain?.pull_requests?.merged || 0));
-        const reviews = repo.rewards_offchain?.score?.breakdown?.reviews || repo.metrics_offchain?.reviews?.count || 0;
-        const issues = repo.rewards_offchain?.score?.breakdown?.issues || 
-          ((repo.metrics_offchain?.issues?.open || 0) + (repo.metrics_offchain?.issues?.closed || 0));
-        
-        return {
-          name: displayName,
-          commits: commits,
-          prs: prs,
-          reviews: reviews,
-          issues: issues,
-          transactionVolume: repo.rewards_onchain?.score?.breakdown?.transactionVolume || 0,
-          contractInteractions: repo.rewards_onchain?.score?.breakdown?.contractInteractions || 0,
-          uniqueWallets: repo.rewards_onchain?.score?.breakdown?.uniqueWallets || 0,
-          level: repo.rewardLevel,
-          totalScore: repo.totalScore
-        };
-      });
-  }, [repositories]);
+    if (!apiData?.charts?.topPerformerBreakdown) {
+      return [];
+    }
+
+    return apiData.charts.topPerformerBreakdown.slice(0, 8).map(item => ({
+      name: item.project,
+      commits: item.offchainBreakdown.commits,
+      prs: item.offchainBreakdown.pullRequests,
+      reviews: item.offchainBreakdown.reviews,
+      issues: item.offchainBreakdown.issues,
+      transactionVolume: item.onchainScore,
+      contractInteractions: 0,
+      uniqueWallets: 0,
+      level: item.tier,
+      totalScore: item.totalScore
+    }));
+  }, [apiData]);
   
   // Preparar dados para o gráfico de distribuição por categoria
   const distributionByCategoryData = useMemo(() => {
-    // Contar quantos repositórios existem em cada nível
-    const levelCounts: Record<string, number> = {};
-    
-    repositories.forEach(repo => {
-      const level = repo.rewardLevel;
-      levelCounts[level] = (levelCounts[level] || 0) + 1;
-    });
-    
-    // Converter para o formato esperado pelo gráfico
-    return Object.entries(levelCounts)
-      .map(([level, count]) => ({
-        name: level,
-        value: count,
-        fill: COLORS[level as keyof typeof COLORS] || '#CBD5E1' // Usar cor do nível ou cor padrão
-      }))
-      .sort((a, b) => {
-        // Ordenação personalizada por nível
-        const levelOrder = ['Diamond', 'Gold', 'Silver', 'Bronze', 'Member', 'High', 'Medium', 'Low'];
-        return levelOrder.indexOf(a.name) - levelOrder.indexOf(b.name);
-      });
-  }, [repositories]);
+    if (!apiData?.charts?.distributionByLevel) {
+      return [];
+    }
+
+    return apiData.charts.distributionByLevel.map(item => ({
+      name: item.tier,
+      value: item.count,
+      fill: COLORS[item.tier as keyof typeof COLORS] || '#CBD5E1'
+    }));
+  }, [apiData]);
 
   return (
     <div className="space-y-8">
@@ -187,7 +137,7 @@ export function DashboardStats({ repositories }: DashboardStatsProps) {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-bold text-purple-500 mt-2">{totalTransactionVolume.toLocaleString()}</p>
+            <p className="text-3xl font-bold text-purple-500 mt-2">{totalTransactionVolume.toFixed(2)}</p>
             <p className="text-lg font-medium text-gray-500">NEAR</p>
           </div>
           <div className="mt-2 text-sm text-gray-500">
@@ -206,7 +156,7 @@ export function DashboardStats({ repositories }: DashboardStatsProps) {
               </div>
             </div>
           </div>
-          <p className="text-3xl font-bold text-blue-500 mt-2">{activeRepos}</p>
+          <p className="text-3xl font-bold text-blue-500 mt-2">{activeProjects}</p>
           <div className="mt-2 text-sm text-gray-500">
             Active in current period
           </div>
@@ -220,15 +170,15 @@ export function DashboardStats({ repositories }: DashboardStatsProps) {
               <div className="absolute right-0 mt-2 w-64 p-3 bg-gray-800 text-white text-sm rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
                 <p className="font-medium mb-1">Activity Metrics</p>
                 <ul className="text-gray-300 list-disc pl-4 space-y-1">
-                  <li>Commits: Code contributions</li>
-                  <li>PRs: Pull request submissions</li>
-                  <li>Reviews: Code review participation</li>
-                  <li>Issues: Bug reports and features</li>
+                  <li>Commits: {apiData?.summary?.totalActivities?.commits || 0}</li>
+                  <li>PRs: {apiData?.summary?.totalActivities?.pullRequests || 0}</li>
+                  <li>Reviews: {apiData?.summary?.totalActivities?.reviews || 0}</li>
+                  <li>Issues: {apiData?.summary?.totalActivities?.issues || 0}</li>
                 </ul>
               </div>
             </div>
           </div>
-          <p className="text-3xl font-bold text-orange-500 mt-2">{totalActivities.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-orange-500 mt-2">{totalActivitiesSum.toLocaleString()}</p>
           <div className="mt-2 text-sm text-gray-500">
             Combined developer actions
           </div>
@@ -271,9 +221,7 @@ export function DashboardStats({ repositories }: DashboardStatsProps) {
                 <Bar dataKey="prs" stackId="a" fill="#10B981" name="Pull Requests" />
                 <Bar dataKey="reviews" stackId="a" fill="#8B5CF6" name="Reviews" />
                 <Bar dataKey="issues" stackId="a" fill="#F97316" name="Issues" />
-                <Bar dataKey="transactionVolume" stackId="a" fill="#EC4899" name="Transaction Volume" />
-                <Bar dataKey="contractInteractions" stackId="a" fill="#F59E0B" name="Contract Interactions" />
-                <Bar dataKey="uniqueWallets" stackId="a" fill="#6366F1" name="Unique Wallets" />
+                <Bar dataKey="transactionVolume" stackId="a" fill="#EC4899" name="On-chain Score" />
               </BarChart>
             </ResponsiveContainer>
           </div>
