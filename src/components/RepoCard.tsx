@@ -240,7 +240,7 @@ export function RepoCard({ repo }: RepoCardProps) {
             <div className="relative group">
               <Info size={14} className="text-gray-400 cursor-help" />
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 -translate-y-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
-                Absolute Values just for mainnet
+                Breakdown values
               </div>
             </div>
           </h4>

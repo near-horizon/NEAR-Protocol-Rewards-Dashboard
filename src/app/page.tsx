@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { DashboardStats } from '@/components/DashboardStats';
 import { RepoCard } from '@/components/RepoCard';
@@ -8,152 +8,82 @@ import { Loader2 } from 'lucide-react';
 import { AlertCircle } from 'lucide-react';
 
 // Tipos para os dados da API
-interface RawOnchainData {
-  metadata: {
-    period: {
-      start_date: string;
-      end_date: string;
-    };
-    account_id: string;
-    timestamp: string;
-  };
-  transactions: Array<{
-    hash: string;
-    timestamp: string;
-    type: string;
-    amount: number;
-  }>;
-}
-
-interface ProjectData {
+interface Repository {
   project: string;
   wallet: string;
   github: string;
   website?: string;
-  repositorie: string;
+  repository: string[];
   period: string;
   timestamp: string;
-  metrics_onchain: OnchainMetrics;
-  rewards_onchain: OnchainRewards;
-  rawdata_onchain: RawOnchainData;
-  metrics_offchain: OffchainMetrics;
-  rewards_offchain: OffchainRewards;
-  rawdata_offchain: RawOffchainData;
-  rewards_total: TotalRewards;
-}
-
-interface OnchainMetrics {
-  transaction_volume: number;
-  contract_interactions: number;
-  unique_wallets: number;
-}
-
-interface OnchainRewards {
-  score: ScoreWithNormalization;
-  level: RewardLevel;
-  total_reward: number;
-}
-
-interface OffchainMetrics {
-  commits: {
-    count: number;
-    authors: AuthorCount[];
+  totalScore: number;
+  rewardLevel: string;
+  rewards_total: {
+    total_reward: number;
   };
-  pull_requests: {
-    open: number;
-    merged: number;
-    closed: number;
-    authors: string[];
-  };
-  reviews: {
-    count: number;
-    authors: string[];
-  };
-  issues: {
-    open: number;
-    closed: number;
-    participants: string[];
-  };
-}
-
-interface OffchainRewards {
-  score: Score;
-  level: RewardLevel;
-  total_reward: number;
-}
-
-interface RawOffchainData {
-  commits: {
-    count: number;
-    authors: AuthorCount[];
-  };
-  pull_requests: {
-    open: number;
-    merged: number;
-    closed: number;
-    authors: string[];
-  };
-  reviews: {
-    count: number;
-    authors: string[];
-  };
-  issues: {
-    open: number;
-    closed: number;
-    participants: string[];
-  };
-}
-
-interface TotalRewards {
-  score: {
-    total: number;
-    breakdown: {
-      onchain: number;
-      offchain: number;
+  metrics_offchain: {
+    commits: {
+      count: number;
+    };
+    pull_requests: {
+      open: number;
+      merged: number;
+    };
+    reviews: {
+      count: number;
+    };
+    issues: {
+      open: number;
+      closed: number;
     };
   };
-  level: RewardLevel;
-  total_reward: number;
-}
-
-interface Score {
-  total: number;
-  breakdown: {
-    commits: number;
-    pullRequests: number;
-    reviews: number;
-    issues: number;
+  metrics_onchain: {
+    transaction_volume: number;
+    contract_interactions: number;
+    unique_wallets: number;
   };
-}
-
-interface ScoreWithNormalization {
-  total: number;
-  normalized: number;
-  breakdown: {
-    transactionVolume: number;
-    contractInteractions: number;
-    uniqueWallets: number;
-  };
-}
-
-interface RewardLevel {
-  name: string;
-  minScore: number;
-  maxScore: number;
-  color: string;
-}
-
-interface AuthorCount {
-  login: string;
-  count: number;
 }
 
 interface ApiResponse {
-  projects: ProjectData[];
-  dashboard: {
-    total_commits: number;
-    total_projects: number;
-    total_monetary_rewards: number;
+  summary: {
+    totalRewards: number;
+    totalVolumeTransaction: number;
+    activeProjects: number;
+    totalActivities: {
+      commits: number;
+      pullRequests: number;
+      reviews: number;
+      issues: number;
+    };
+    totalActivitiesSum: number;
+  };
+  charts: {
+    topPerformerBreakdown: Array<{
+      project: string;
+      onchainScore: number;
+      offchainBreakdown: {
+        commits: number;
+        pullRequests: number;
+        reviews: number;
+        issues: number;
+      };
+      totalScore: number;
+      tier: string;
+    }>;
+    distributionByLevel: Array<{
+      tier: string;
+      count: number;
+      totalReward: number;
+      percentage: number;
+    }>;
+  };
+  projectsList: Repository[];
+  metadata: {
+    period: string;
+    generatedAt: string;
+    totalProjectsProcessed: number;
+    successfulProjects: number;
+    failedProjects: number;
   };
 }
 
@@ -209,54 +139,17 @@ export default function Home() {
     fetchData();
   }, []);
   
-  // Transform API data to our application format
+  // Transform API data to repositories format
   const repositories = useMemo(() => {
     console.log('apiData:', apiData);
-    if (!apiData || !Array.isArray(apiData)) {
+    if (!apiData || !apiData.projectsList || !Array.isArray(apiData.projectsList)) {
       console.log('No projects data available');
       return [];
     }
     
     try {
-      const transformedRepos = apiData.map(project => {
-        console.log('Processing project:', project);
-        
-        // Criar objeto Repository com a nova estrutura
-        return {
-          project: project.project || 'Unknown Project',
-          wallet: project.wallet || '',
-          github: project.github || '',
-          website: project.website || '',
-          repository: Array.isArray(project.repository) ? project.repository : [],
-          period: project.period || '',
-          timestamp: project.timestamp || '',
-          totalScore: project.rewards_total?.score?.total || 0,
-          rewardLevel: project.rewards_total?.level?.name || 'Unknown',
-          metrics_onchain: project.metrics_onchain || {
-            transaction_volume: 0,
-            contract_interactions: 0,
-            unique_wallets: 0
-          },
-          rewards_onchain: project.rewards_onchain || {
-            total_reward: 0
-          },
-          rewards_offchain: project.rewards_offchain || {
-            total_reward: 0
-          },
-          metrics_offchain: project.metrics_offchain || {
-            commits: { count: 0 },
-            pull_requests: { open: 0, merged: 0 },
-            reviews: { count: 0 },
-            issues: { open: 0, closed: 0 }
-          },
-          rewards_total: project.rewards_total || {
-            total_reward: 0
-          }
-        };
-      });
-      
-      console.log('All transformed repos:', transformedRepos);
-      return transformedRepos;
+      console.log('All projects:', apiData.projectsList);
+      return apiData.projectsList;
     } catch (err) {
       console.error('Error processing API data:', err);
       return [];
@@ -320,13 +213,20 @@ export default function Home() {
       <main className="flex-grow max-w-[2000px] mx-auto px-6 py-12 w-full">
         {view === 'dashboard' ? (
           <DashboardStats 
-            repositories={uniqueRepositories} 
+            apiData={apiData}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mt-8">
-            {filteredAndSortedRepos.map((repo) => (
-              <RepoCard key={repo.wallet || repo.project} repo={repo} />
-            ))}
+            {filteredAndSortedRepos.length > 0 ? (
+              filteredAndSortedRepos.map((repo) => (
+                <RepoCard key={repo.wallet || repo.project} repo={repo} />
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500 py-12">
+                <p>No projects found.</p>
+                <p>Check filters or try again.</p>
+              </div>
+            )}
           </div>
         )}
       </main>
@@ -419,8 +319,8 @@ export default function Home() {
               <h3 className="text-sm font-semibold text-gray-900 mb-4">Program Updates</h3>
               <div className="space-y-3 text-sm text-gray-600">
                 <p>Last updated: {new Date().toLocaleDateString()}</p>
-                <p>Current reward period: {uniqueRepositories[0]?.period || 'N/A'}</p>
-                <p>Active repositories: {uniqueRepositories.length}</p>
+                <p>Current reward period: {apiData?.metadata?.period || 'N/A'}</p>
+                <p>Active repositories: {apiData?.summary?.activeProjects || 0}</p>
               </div>
             </div>
           </div>
