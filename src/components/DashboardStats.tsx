@@ -61,7 +61,7 @@ const COLORS = {
   Medium: '#10B981',  // Verde
   High: '#EC4899',    // Rosa
   Contributor: '#10B981', // Verde
-  Explorer: '#8B5CF6'     // Roxo
+  Explorer: '#06B6D4'     // Azul Cyan
 };
 
 export function DashboardStats({ apiData }: DashboardStatsProps) {
