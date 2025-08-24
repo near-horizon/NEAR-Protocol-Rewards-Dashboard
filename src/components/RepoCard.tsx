@@ -82,9 +82,9 @@ export function RepoCard({ repo }: RepoCardProps) {
 
   // Calculate activity scores
   const commitScore = repo.metrics_offchain?.commits?.count || 0;
-  const prScore = (repo.metrics_offchain?.pull_requests?.open || 0) + (repo.metrics_offchain?.pull_requests?.merged || 0);
+  const prScore = (repo.metrics_offchain?.pull_requests?.merged || 0);
   const reviewScore = repo.metrics_offchain?.reviews?.count || 0;
-  const issueScore = (repo.metrics_offchain?.issues?.open || 0) + (repo.metrics_offchain?.issues?.closed || 0);
+  const issueScore = (repo.metrics_offchain?.issues?.closed || 0);
 
   // Format dates
   const formatDate = (dateString: string) => {
